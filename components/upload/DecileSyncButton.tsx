@@ -20,7 +20,7 @@ export function DecileSyncButton() {
       const res = await fetch("/api/sync", { method: "POST" });
       const json = (await res.json()) as ApiResponse<SyncResult>;
 
-      if (!res.ok || json.error) {
+      if (!res.ok || json.error || !json.data) {
         setState({ kind: "error", message: json.error ?? `HTTP ${res.status}` });
         return;
       }
