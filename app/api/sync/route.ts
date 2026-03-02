@@ -85,9 +85,11 @@ async function runSync() {
   // ── Map + upsert in chunks of 50 ─────────────────────────────────────────
   const mapped = rawDeals.map((raw) => mapDecileHubDeal(raw));
 
+  // Use chunk size of 1 for first insert to surface any DB errors clearly
   const chunks = chunkArray(mapped, CHUNK_SIZE);
   let inserted = 0;
   let skipped = 0;
+  let firstError: string | null = null;
 
   for (const chunk of chunks) {
     const { data, error } = await supabase
@@ -100,6 +102,7 @@ async function runSync() {
 
     if (error) {
       console.error("[sync] Supabase upsert error:", error.message);
+      if (!firstError) firstError = error.message;
       skipped += chunk.length;
     } else {
       const upserted = data?.length ?? 0;
@@ -108,7 +111,7 @@ async function runSync() {
     }
   }
 
-  return NextResponse.json<ApiResponse<SyncResult>>({
-    data: { fetched, inserted, skipped },
+  return NextResponse.json<ApiResponse<SyncResult & { firstError?: string }>>({
+    data: { fetched, inserted, skipped, ...(firstError ? { firstError } : {}) },
   });
 }
