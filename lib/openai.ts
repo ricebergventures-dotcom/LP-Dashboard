@@ -1,21 +1,24 @@
 import OpenAI from "openai";
 
 // Server-side only — never import this in client components.
-// The OPENAI_API_KEY env var is NOT prefixed with NEXT_PUBLIC_.
+// Uses Google Gemini via its OpenAI-compatible endpoint.
 let _client: OpenAI | null = null;
 
 export function getOpenAIClient(): OpenAI {
   if (!_client) {
-    const apiKey = process.env.OPENAI_API_KEY;
+    const apiKey = process.env.GEMINI_API_KEY;
     if (!apiKey) {
-      throw new Error("OPENAI_API_KEY is not set");
+      throw new Error("GEMINI_API_KEY is not set");
     }
-    _client = new OpenAI({ apiKey });
+    _client = new OpenAI({
+      apiKey,
+      baseURL: "https://generativelanguage.googleapis.com/v1beta/openai/",
+    });
   }
   return _client;
 }
 
-export const SUMMARY_MODEL = "gpt-4o" as const;
+export const SUMMARY_MODEL = "gemini-2.0-flash" as const;
 export const SUMMARY_TEMPERATURE = 0.3;
 export const SUMMARY_MAX_TOKENS = 200;
 
