@@ -1,0 +1,128 @@
+// POST /api/sync
+// Admin-only. Fetches new deals from Decile Hub since the last sync,
+// upserts them into the deals table, and returns a summary of what changed.
+//
+// Prerequisite DB migration (run once in Supabase SQL editor):
+//   ALTER TABLE deals
+//     ADD CONSTRAINT deals_company_date_unique
+//     UNIQUE (company_name, date_added);
+
+import { NextResponse } from "next/server";
+import { createRouteClient } from "@/lib/supabase-server";
+import { fetchDealsFromDecileHub, mapDecileHubDeal, DecileHubError } from "@/lib/decile-hub";
+import { chunkArray } from "@/utils/csv-parser";
+import type { ApiResponse, Profile, WeeklySummary } from "@/types";
+
+const CHUNK_SIZE = 50;
+
+export interface SyncResult {
+  fetched: number;
+  inserted: number;
+  skipped: number;
+}
+
+export async function POST(request: Request) {
+  // Suppress "unused variable" — request is required by Next.js route signature.
+  void request;
+
+  const supabase = createRouteClient();
+
+  // ── Auth ──────────────────────────────────────────────────────────────────
+  const {
+    data: { user },
+    error: authErr,
+  } = await supabase.auth.getUser();
+  if (authErr || !user) {
+    return NextResponse.json<ApiResponse<never>>(
+      { error: "Unauthorized" },
+      { status: 401 }
+    );
+  }
+
+  // ── Role check — admin only ───────────────────────────────────────────────
+  const { data: profile } = await supabase
+    .from("profiles")
+    .select("role")
+    .eq("id", user.id)
+    .single<Pick<Profile, "role">>();
+
+  if (!profile || profile.role !== "admin") {
+    return NextResponse.json<ApiResponse<never>>(
+      { error: "Forbidden — admin access required" },
+      { status: 403 }
+    );
+  }
+
+  // ── Determine last-sync timestamp ─────────────────────────────────────────
+  // Use the most recent weekly_summary's generated_at as the high-water mark.
+  // If there are no summaries yet we fetch everything.
+  const { data: latestSummary } = await supabase
+    .from("weekly_summaries")
+    .select("generated_at")
+    .order("generated_at", { ascending: false })
+    .limit(1)
+    .single<Pick<WeeklySummary, "generated_at">>();
+
+  const since = latestSummary ? new Date(latestSummary.generated_at) : undefined;
+
+  // ── Fetch from Decile Hub ─────────────────────────────────────────────────
+  let rawDeals;
+  try {
+    rawDeals = await fetchDealsFromDecileHub(since);
+  } catch (err) {
+    if (err instanceof DecileHubError) {
+      const status = err.status === 401 ? 401 : err.status === 429 ? 429 : 502;
+      return NextResponse.json<ApiResponse<never>>(
+        { error: err.message },
+        { status }
+      );
+    }
+    const message = err instanceof Error ? err.message : "Unknown error";
+    return NextResponse.json<ApiResponse<never>>(
+      { error: `Decile Hub fetch failed: ${message}` },
+      { status: 502 }
+    );
+  }
+
+  const fetched = rawDeals.length;
+
+  if (fetched === 0) {
+    return NextResponse.json<ApiResponse<SyncResult>>({
+      data: { fetched: 0, inserted: 0, skipped: 0 },
+    });
+  }
+
+  // ── Map + upsert in chunks of 50 ─────────────────────────────────────────
+  const mapped = rawDeals.map((raw) => ({
+    ...mapDecileHubDeal(raw),
+    created_by: user.id,
+  }));
+
+  const chunks = chunkArray(mapped, CHUNK_SIZE);
+  let inserted = 0;
+  let skipped = 0;
+
+  for (const chunk of chunks) {
+    const { data, error } = await supabase
+      .from("deals")
+      .upsert(chunk, {
+        onConflict: "company_name,date_added",
+        ignoreDuplicates: true,  // skip existing rows; don't overwrite
+      })
+      .select("id");
+
+    if (error) {
+      // Log and continue — partial success is better than total failure.
+      console.error("[sync] Supabase upsert error:", error.message);
+      skipped += chunk.length;
+    } else {
+      const upserted = data?.length ?? 0;
+      inserted += upserted;
+      skipped += chunk.length - upserted;
+    }
+  }
+
+  return NextResponse.json<ApiResponse<SyncResult>>({
+    data: { fetched, inserted, skipped },
+  });
+}

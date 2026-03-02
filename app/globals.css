@@ -1,0 +1,97 @@
+@import url('https://fonts.googleapis.com/css2?family=DM+Mono:wght@300;400;500&family=DM+Sans:wght@300;400;500;600&display=swap');
+
+@tailwind base;
+@tailwind components;
+@tailwind utilities;
+
+@layer base {
+  :root {
+    --background: 0 0% 100%;
+    --foreground: 0 0% 4%;
+
+    --card: 0 0% 100%;
+    --card-foreground: 0 0% 4%;
+
+    --border: 0 0% 90%;
+    --input: 0 0% 90%;
+    --ring: 180 57% 59%;
+
+    --primary: 0 0% 4%;
+    --primary-foreground: 0 0% 100%;
+
+    --secondary: 0 0% 98%;
+    --secondary-foreground: 0 0% 4%;
+
+    --muted: 0 0% 98%;
+    --muted-foreground: 0 0% 45%;
+
+    --accent: 180 57% 59%;
+    --accent-foreground: 0 0% 4%;
+
+    --radius: 0.125rem;
+
+    --font-mono: 'DM Mono', monospace;
+    --font-sans: 'DM Sans', sans-serif;
+  }
+
+  .dark {
+    --background: 222 18% 9%;
+    --foreground: 210 17% 91%;
+
+    --card: 222 18% 11%;
+    --card-foreground: 210 17% 91%;
+
+    --border: 215 14% 18%;
+    --input: 215 14% 18%;
+    --ring: 180 57% 59%;
+
+    --primary: 210 17% 91%;
+    --primary-foreground: 222 18% 9%;
+
+    --secondary: 215 14% 16%;
+    --secondary-foreground: 210 17% 80%;
+
+    --muted: 215 14% 16%;
+    --muted-foreground: 215 14% 52%;
+
+    --accent: 180 57% 59%;
+    --accent-foreground: 0 0% 4%;
+  }
+}
+
+@layer base {
+  * {
+    @apply border-border;
+  }
+
+  body {
+    @apply bg-background text-foreground;
+    font-family: var(--font-sans);
+    font-feature-settings: "rlig" 1, "calt" 1;
+    -webkit-font-smoothing: antialiased;
+    -moz-osx-font-smoothing: grayscale;
+  }
+
+  .tabular {
+    font-family: var(--font-mono);
+    font-variant-numeric: tabular-nums;
+  }
+
+  .font-mono {
+    font-feature-settings: "tnum" 1;
+  }
+
+  ::-webkit-scrollbar {
+    width: 6px;
+    height: 6px;
+  }
+  ::-webkit-scrollbar-track {
+    @apply bg-transparent;
+  }
+  ::-webkit-scrollbar-thumb {
+    @apply rounded-full bg-border;
+  }
+  ::-webkit-scrollbar-thumb:hover {
+    @apply bg-muted-foreground/40;
+  }
+}
