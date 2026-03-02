@@ -34,8 +34,8 @@ export async function GET() {
     try {
       const { createClient } = await import("@supabase/supabase-js");
       const sb = createClient(supabaseUrl, supabaseKey);
-      const { data, error, count } = await sb.from("deals").select("id", { count: "exact" }).limit(1);
-      supabaseResult = { error: error?.message ?? null, rowCount: data?.length ?? 0, totalCount: count };
+      const { data, error, count } = await sb.from("deals").select("*", { count: "exact" }).order("date_added", { ascending: false }).limit(3);
+      supabaseResult = { error: error?.message ?? null, rowCount: data?.length ?? 0, totalCount: count, sample: data?.slice(0,1) };
     } catch (e) {
       supabaseResult = { threw: String(e) };
     }
