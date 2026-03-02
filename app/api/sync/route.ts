@@ -1,5 +1,7 @@
-// POST /api/sync
-// Admin-only. Fetches new deals from Decile Hub since the last sync,
+// POST /api/sync  — manual trigger
+// GET  /api/sync  — Vercel Cron trigger (requires Authorization: Bearer <CRON_SECRET>)
+//
+// Fetches new deals from Decile Hub since the last sync,
 // upserts them into the deals table, and returns a summary of what changed.
 //
 // Prerequisite DB migration (run once in Supabase SQL editor):
@@ -23,10 +25,22 @@ export interface SyncResult {
   skipped: number;
 }
 
-export async function POST(request: Request) {
-  // Suppress "unused variable" — request is required by Next.js route signature.
-  void request;
+// Vercel Cron calls GET — verify the cron secret to prevent abuse.
+export async function GET(request: Request) {
+  const authHeader = request.headers.get("authorization");
+  const cronSecret = process.env.CRON_SECRET;
+  if (cronSecret && authHeader !== `Bearer ${cronSecret}`) {
+    return NextResponse.json({ error: "Unauthorized" }, { status: 401 });
+  }
+  return runSync();
+}
 
+export async function POST(request: Request) {
+  void request;
+  return runSync();
+}
+
+async function runSync() {
   const supabase = createRouteClient();
 
   // ── Determine last-sync timestamp ─────────────────────────────────────────
@@ -80,12 +94,11 @@ export async function POST(request: Request) {
       .from("deals")
       .upsert(chunk, {
         onConflict: "company_name,date_added",
-        ignoreDuplicates: true,  // skip existing rows; don't overwrite
+        ignoreDuplicates: true,
       })
       .select("id");
 
     if (error) {
-      // Log and continue — partial success is better than total failure.
       console.error("[sync] Supabase upsert error:", error.message);
       skipped += chunk.length;
     } else {
