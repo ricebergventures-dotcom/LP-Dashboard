@@ -193,7 +193,7 @@ export async function generatePdf(data: PdfData): Promise<Uint8Array> {
     thickness: 0.5, color: C_GRID,
   });
 
-  for (let i = 0; i < metricItems.length; i++) {
+  metricItems.forEach((item, i) => {
     const col     = i % 2;
     const row     = Math.floor(i / 2);
     const cellX   = x + col * CELL_W;
@@ -218,16 +218,16 @@ export async function generatePdf(data: PdfData): Promise<Uint8Array> {
     });
 
     // Label
-    page.drawText(metricItems[i].label.toUpperCase(), {
+    page.drawText(item.label.toUpperCase(), {
       x: cellX + 16, y: cellTop - 20,
       font: bld, size: 6.5, color: C_LIGHT,
     });
     // Value
-    page.drawText(metricItems[i].value, {
+    page.drawText(item.value, {
       x: cellX + 16, y: cellTop - 20 - 26,
       font: bld, size: 22, color: C_BLACK,
     });
-  }
+  });
 
   y = gridTop - 2 * CELL_H - 8;
 
