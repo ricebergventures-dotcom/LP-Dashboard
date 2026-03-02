@@ -9,21 +9,11 @@ import {
 } from "date-fns";
 import type {
   Deal,
-  DealStage,
   DashboardMetrics,
   SectorCount,
   StageCount,
   AggregatedData,
 } from "@/types";
-
-const STAGE_ORDER: readonly DealStage[] = [
-  "pre-seed",
-  "seed",
-  "series-a",
-  "series-b",
-  "series-c",
-  "growth",
-];
 
 export function computeMetrics(deals: Deal[]): DashboardMetrics {
   const now = new Date();
@@ -78,6 +68,7 @@ export function computeMetrics(deals: Deal[]): DashboardMetrics {
 export function computeSectorCounts(deals: Deal[]): SectorCount[] {
   const map = new Map<string, number>();
   for (const deal of deals) {
+    if (!deal.sector) continue; // skip empty sectors
     map.set(deal.sector, (map.get(deal.sector) ?? 0) + 1);
   }
   return Array.from(map.entries())
@@ -86,14 +77,14 @@ export function computeSectorCounts(deals: Deal[]): SectorCount[] {
 }
 
 export function computeStageCounts(deals: Deal[]): StageCount[] {
-  const map = new Map<DealStage, number>();
+  const map = new Map<string, number>();
   for (const deal of deals) {
+    if (!deal.stage) continue;
     map.set(deal.stage, (map.get(deal.stage) ?? 0) + 1);
   }
-  return STAGE_ORDER.filter((s) => map.has(s)).map((stage) => ({
-    stage,
-    count: map.get(stage) ?? 0,
-  }));
+  return Array.from(map.entries())
+    .map(([stage, count]) => ({ stage, count }))
+    .sort((a, b) => b.count - a.count);
 }
 
 /** Returns metrics, sector counts, and stage counts in a single pass. */

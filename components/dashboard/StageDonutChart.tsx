@@ -4,7 +4,6 @@ import { PieChart, Pie, Cell, Tooltip, ResponsiveContainer } from "recharts";
 import { Card, CardHeader, CardTitle, CardContent } from "@/components/ui/card";
 import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/dashboard/EmptyState";
-import { formatStage } from "@/utils/formatters";
 import type { StageCount } from "@/types";
 
 // Teal — dark to light as specified
@@ -28,7 +27,7 @@ export function StageDonutChart({ data }: StageDonutChartProps) {
     );
   }
 
-  const chartData = data.map((d) => ({ name: formatStage(d.stage), value: d.count }));
+  const chartData = data.map((d) => ({ name: d.stage, value: d.count }));
   const total = data.reduce((sum, d) => sum + d.count, 0);
 
   return (

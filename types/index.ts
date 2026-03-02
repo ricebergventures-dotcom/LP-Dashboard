@@ -49,7 +49,7 @@ export interface Deal {
   id: string;
   company_name: string;
   sector: string;
-  stage: DealStage;
+  stage: string;   // pipeline stage name from Decile Hub (e.g. "Added", "Reach Out to Cold Lead")
   geography: string;
   status: DealStatus;
   source: string;
@@ -96,7 +96,7 @@ export interface SectorCount {
 }
 
 export interface StageCount {
-  stage: DealStage;
+  stage: string;
   count: number;
 }
 

@@ -1,5 +1,5 @@
 import { format, parseISO } from "date-fns";
-import type { DealStage, DealStatus } from "@/types";
+import type { DealStatus } from "@/types";
 
 export function formatDate(iso: string): string {
   return format(parseISO(iso), "MMM d, yyyy");
@@ -36,17 +36,9 @@ export function formatCount(n: number): string {
   return n.toLocaleString("en-US");
 }
 
-const STAGE_LABELS: Record<DealStage, string> = {
-  "pre-seed": "Pre-Seed",
-  seed: "Seed",
-  "series-a": "Series A",
-  "series-b": "Series B",
-  "series-c": "Series C",
-  growth: "Growth",
-};
-
-export function formatStage(stage: DealStage): string {
-  return STAGE_LABELS[stage] ?? stage;
+// Stage names are now free-form strings from Decile Hub (e.g. "Added", "Reach Out to Cold Lead").
+export function formatStage(stage: string): string {
+  return stage || "—";
 }
 
 const STATUS_LABELS: Record<DealStatus, string> = {

@@ -199,7 +199,7 @@ export function mapDecileHubDeal(
   return {
     company_name: raw.name,
     sector: "",
-    stage: "seed",              // funding round not available in this endpoint
+    stage: raw.stage.name,      // actual pipeline stage e.g. "Added", "Reach Out to Cold Lead"
     geography: "",
     status: deriveStatus(raw.stage.name),
     source: "Decile Hub",
