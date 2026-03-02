@@ -1,5 +1,4 @@
 import { Suspense } from "react";
-import { redirect } from "next/navigation";
 import { createServerClient } from "@/lib/supabase-server";
 import { TopBar } from "@/components/layout/TopBar";
 import { AllTransactionsTable, AllTransactionsTableSkeleton } from "@/components/dashboard/AllTransactionsTable";
@@ -10,11 +9,6 @@ export const dynamic = "force-dynamic";
 
 async function TransactionsContent() {
   const supabase = createServerClient();
-
-  const {
-    data: { user },
-  } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
 
   const { data } = await supabase
     .from("deals")

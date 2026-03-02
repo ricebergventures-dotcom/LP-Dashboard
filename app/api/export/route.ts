@@ -10,12 +10,6 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const supabase = createRouteClient();
 
-  // Auth
-  const { data: { user }, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !user) {
-    return new NextResponse("Unauthorized", { status: 401 });
-  }
-
   const { searchParams } = new URL(request.url);
   const fromParam = searchParams.get("from");
   const toParam = searchParams.get("to");

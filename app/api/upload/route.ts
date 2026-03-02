@@ -1,7 +1,7 @@
 import { NextResponse } from "next/server";
 import { createRouteClient } from "@/lib/supabase-server";
 import { chunkArray } from "@/utils/csv-parser";
-import type { CsvDealRow, ImportResult, ApiResponse, Profile } from "@/types";
+import type { CsvDealRow, ImportResult, ApiResponse } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -9,29 +9,6 @@ const CHUNK_SIZE = 50;
 
 export async function POST(request: Request) {
   const supabase = createRouteClient();
-
-  // Auth check
-  const { data: { user }, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !user) {
-    return NextResponse.json<ApiResponse<never>>(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
-
-  // Role check — admin only
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single<Pick<Profile, "role">>();
-
-  if (!profile || profile.role !== "admin") {
-    return NextResponse.json<ApiResponse<never>>(
-      { error: "Forbidden — admin access required" },
-      { status: 403 }
-    );
-  }
 
   // Parse body
   let rows: CsvDealRow[];
@@ -65,7 +42,6 @@ export async function POST(request: Request) {
       notes: row.notes ?? null,
       date_added: row.date_added ?? new Date().toISOString().slice(0, 10),
       source: "CSV Import",
-      created_by: user.id,
     }));
 
     const { error } = await supabase.from("deals").insert(inserts);

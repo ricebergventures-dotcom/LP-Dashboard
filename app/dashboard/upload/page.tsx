@@ -1,30 +1,11 @@
-import { redirect } from "next/navigation";
-import { createServerClient } from "@/lib/supabase-server";
 import { TopBar } from "@/components/layout/TopBar";
 import { CsvUploader } from "@/components/upload/CsvUploader";
 import { DecileSyncButton } from "@/components/upload/DecileSyncButton";
-import type { Profile } from "@/types";
 
 export const metadata = { title: "Upload" };
 export const dynamic = "force-dynamic";
 
-export default async function UploadPage() {
-  const supabase = createServerClient();
-
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
-
-  // Admin-only page — redirect viewers
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single();
-
-  if (!profile || (profile as Profile).role !== "admin") {
-    redirect("/dashboard");
-  }
-
+export default function UploadPage() {
   return (
     <div className="flex flex-col h-full overflow-hidden">
       <TopBar title="Upload Deals" />
@@ -40,7 +21,6 @@ export default async function UploadPage() {
           </div>
           <CsvUploader />
 
-          {/* ── Decile Hub sync ────────────────────────────────────────── */}
           <div className="pt-6 border-t border-border space-y-1">
             <h2 className="text-sm font-medium text-foreground">Sync from Decile Hub</h2>
             <p className="text-sm text-muted-foreground">

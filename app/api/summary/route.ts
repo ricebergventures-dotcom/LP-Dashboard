@@ -12,20 +12,12 @@ import {
   buildSectorRecord,
   buildStageRecord,
 } from "@/utils/aggregations";
-import type { Deal, WeeklySummary, ApiResponse, Profile } from "@/types";
+import type { Deal, WeeklySummary, ApiResponse } from "@/types";
 
 export const dynamic = "force-dynamic";
 
 export async function GET() {
   const supabase = createRouteClient();
-
-  const { data: { user }, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !user) {
-    return NextResponse.json<ApiResponse<never>>(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
 
   const { data, error } = await supabase
     .from("weekly_summaries")
@@ -49,29 +41,6 @@ export async function GET() {
 export async function POST() {
   const supabase = createRouteClient();
 
-  // Auth
-  const { data: { user }, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !user) {
-    return NextResponse.json<ApiResponse<never>>(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
-
-  // Admin only
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single<Pick<Profile, "role">>();
-
-  if (!profile || profile.role !== "admin") {
-    return NextResponse.json<ApiResponse<never>>(
-      { error: "Forbidden — admin access required" },
-      { status: 403 }
-    );
-  }
-
   // Fetch last 7 days of deals
   const now = new Date();
   const weekEnd = endOfDay(now);
@@ -94,7 +63,6 @@ export async function POST() {
   const topSectors = buildSectorRecord(deals);
   const stageDistribution = buildStageRecord(deals);
 
-  // Build structured context for OpenAI
   const sectorLines = Object.entries(topSectors)
     .sort(([, a], [, b]) => b - a)
     .map(([s, c]) => `  ${s}: ${c}`)
@@ -114,7 +82,6 @@ export async function POST() {
     `\nStage distribution:\n${stageLines || "  (none)"}`,
   ].join("\n");
 
-  // Generate summary via OpenAI
   const openai = getOpenAIClient();
   const completion = await openai.chat.completions.create({
     model: SUMMARY_MODEL,
@@ -128,7 +95,6 @@ export async function POST() {
 
   const summaryText = completion.choices[0]?.message?.content?.trim() ?? "";
 
-  // Persist to weekly_summaries
   const { data: saved, error: saveErr } = await supabase
     .from("weekly_summaries")
     .insert({
@@ -138,7 +104,6 @@ export async function POST() {
       deal_count: deals.length,
       top_sectors: topSectors,
       stage_distribution: stageDistribution,
-      generated_by: user.id,
     })
     .select()
     .single();

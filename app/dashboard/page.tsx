@@ -9,22 +9,16 @@ import { TransactionsTable, TransactionsTableSkeleton } from "@/components/dashb
 import { computeMetrics, computeSectorCounts, computeStageCounts } from "@/utils/aggregations";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
-import { redirect } from "next/navigation";
-import type { Deal, WeeklySummary, Profile } from "@/types";
+import type { Deal, WeeklySummary } from "@/types";
 
 export const metadata = { title: "Dashboard" };
-
-// Force dynamic rendering — dashboard data changes frequently
 export const dynamic = "force-dynamic";
 
 async function DashboardContent() {
   const supabase = createServerClient();
 
-  const { data: { user } } = await supabase.auth.getUser();
-  if (!user) redirect("/auth/login");
-
-  // Parallel data fetches
-  const [dealsResult, summaryResult, profileResult] = await Promise.all([
+  // Parallel data fetches — no auth required
+  const [dealsResult, summaryResult] = await Promise.all([
     supabase.from("deals").select("*").order("date_added", { ascending: false }),
     supabase
       .from("weekly_summaries")
@@ -32,13 +26,10 @@ async function DashboardContent() {
       .order("generated_at", { ascending: false })
       .limit(1)
       .single(),
-    supabase.from("profiles").select("*").eq("id", user.id).single(),
   ]);
 
   const deals = (dealsResult.data as Deal[]) ?? [];
   const summary = summaryResult.error ? null : (summaryResult.data as WeeklySummary);
-  const profile = profileResult.data as Profile | null;
-  const isAdmin = profile?.role === "admin";
 
   const metrics = computeMetrics(deals);
   const sectors = computeSectorCounts(deals);
@@ -51,22 +42,17 @@ async function DashboardContent() {
 
       <div className="flex-1 overflow-y-auto">
         <div className="space-y-6 p-6">
-          {/* Metrics row */}
           <MetricsRow metrics={metrics} />
 
-          {/* Charts row */}
           <div className="flex gap-5 items-start">
             <SectorBarChart data={sectors} />
             <StageDonutChart data={stages} />
           </div>
 
-          {/* Summary panel */}
-          <WeeklySummaryPanel summary={summary} isAdmin={isAdmin} />
+          <WeeklySummaryPanel summary={summary} isAdmin={false} />
 
-          {/* Recent transactions */}
           <TransactionsTable deals={recentDeals} />
 
-          {/* Export footer */}
           <div className="flex justify-end pb-2">
             <Button asChild variant="outline" size="sm" className="gap-1.5 h-7 text-xs">
               <a href="/api/export" download>

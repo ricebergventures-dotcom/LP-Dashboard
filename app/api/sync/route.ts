@@ -11,7 +11,7 @@ import { NextResponse } from "next/server";
 import { createRouteClient } from "@/lib/supabase-server";
 import { fetchDealsFromDecileHub, mapDecileHubDeal, DecileHubError } from "@/lib/decile-hub";
 import { chunkArray } from "@/utils/csv-parser";
-import type { ApiResponse, Profile, WeeklySummary } from "@/types";
+import type { ApiResponse, WeeklySummary } from "@/types";
 
 export const dynamic = "force-dynamic";
 
@@ -28,32 +28,6 @@ export async function POST(request: Request) {
   void request;
 
   const supabase = createRouteClient();
-
-  // ── Auth ──────────────────────────────────────────────────────────────────
-  const {
-    data: { user },
-    error: authErr,
-  } = await supabase.auth.getUser();
-  if (authErr || !user) {
-    return NextResponse.json<ApiResponse<never>>(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
-
-  // ── Role check — admin only ───────────────────────────────────────────────
-  const { data: profile } = await supabase
-    .from("profiles")
-    .select("role")
-    .eq("id", user.id)
-    .single<Pick<Profile, "role">>();
-
-  if (!profile || profile.role !== "admin") {
-    return NextResponse.json<ApiResponse<never>>(
-      { error: "Forbidden — admin access required" },
-      { status: 403 }
-    );
-  }
 
   // ── Determine last-sync timestamp ─────────────────────────────────────────
   // Use the most recent weekly_summary's generated_at as the high-water mark.
@@ -95,10 +69,7 @@ export async function POST(request: Request) {
   }
 
   // ── Map + upsert in chunks of 50 ─────────────────────────────────────────
-  const mapped = rawDeals.map((raw) => ({
-    ...mapDecileHubDeal(raw),
-    created_by: user.id,
-  }));
+  const mapped = rawDeals.map((raw) => mapDecileHubDeal(raw));
 
   const chunks = chunkArray(mapped, CHUNK_SIZE);
   let inserted = 0;

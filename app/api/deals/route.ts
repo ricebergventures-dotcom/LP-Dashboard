@@ -7,14 +7,6 @@ export const dynamic = "force-dynamic";
 export async function GET(request: Request) {
   const supabase = createRouteClient();
 
-  const { data: { user }, error: authErr } = await supabase.auth.getUser();
-  if (authErr || !user) {
-    return NextResponse.json<ApiResponse<never>>(
-      { error: "Unauthorized" },
-      { status: 401 }
-    );
-  }
-
   const { searchParams } = new URL(request.url);
   const limit = Number(searchParams.get("limit") ?? "20");
   const sector = searchParams.get("sector");
