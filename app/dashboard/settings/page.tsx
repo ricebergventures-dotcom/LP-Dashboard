@@ -6,6 +6,7 @@ import { Card, CardContent } from "@/components/ui/card";
 import type { Profile } from "@/types";
 
 export const metadata = { title: "Settings" };
+export const dynamic = "force-dynamic";
 
 export default async function SettingsPage() {
   const supabase = createServerClient();

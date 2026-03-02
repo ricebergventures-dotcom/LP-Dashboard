@@ -6,6 +6,7 @@ import { DecileSyncButton } from "@/components/upload/DecileSyncButton";
 import type { Profile } from "@/types";
 
 export const metadata = { title: "Upload" };
+export const dynamic = "force-dynamic";
 
 export default async function UploadPage() {
   const supabase = createServerClient();

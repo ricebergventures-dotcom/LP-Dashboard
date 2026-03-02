@@ -13,6 +13,8 @@ import { fetchDealsFromDecileHub, mapDecileHubDeal, DecileHubError } from "@/lib
 import { chunkArray } from "@/utils/csv-parser";
 import type { ApiResponse, Profile, WeeklySummary } from "@/types";
 
+export const dynamic = "force-dynamic";
+
 const CHUNK_SIZE = 50;
 
 export interface SyncResult {

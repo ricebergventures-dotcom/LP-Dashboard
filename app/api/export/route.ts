@@ -5,6 +5,8 @@ import { generatePdf } from "@/lib/pdf-generator";
 import { computeAggregatedData } from "@/utils/aggregations";
 import type { Deal, WeeklySummary } from "@/types";
 
+export const dynamic = "force-dynamic";
+
 export async function GET(request: Request) {
   const supabase = createRouteClient();
 

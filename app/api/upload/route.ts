@@ -3,6 +3,8 @@ import { createRouteClient } from "@/lib/supabase-server";
 import { chunkArray } from "@/utils/csv-parser";
 import type { CsvDealRow, ImportResult, ApiResponse, Profile } from "@/types";
 
+export const dynamic = "force-dynamic";
+
 const CHUNK_SIZE = 50;
 
 export async function POST(request: Request) {

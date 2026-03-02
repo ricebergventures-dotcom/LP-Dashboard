@@ -1,5 +1,7 @@
 import { NextResponse } from "next/server";
 import { subDays, startOfDay, endOfDay, format } from "date-fns";
+
+export const dynamic = "force-dynamic";
 import { createRouteClient } from "@/lib/supabase-server";
 import {
   getOpenAIClient,
