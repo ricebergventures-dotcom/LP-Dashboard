@@ -3,24 +3,33 @@ import { NextResponse } from "next/server";
 export const dynamic = "force-dynamic";
 
 export async function GET() {
-  const url  = process.env.NEXT_PUBLIC_SUPABASE_URL;
-  const key  = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  const baseUrl     = process.env.DECILE_HUB_BASE_URL;
+  const token       = process.env.DECILE_HUB_API_TOKEN;
+  const pipelineId  = process.env.DECILE_HUB_PIPELINE_ID ?? "WnW1aLKE";
 
-  if (!url || !key) {
-    return NextResponse.json({
-      ok: false,
-      error: "Missing env vars",
-      url:  url  ? "SET" : "MISSING",
-      key:  key  ? "SET" : "MISSING",
-    });
+  const builtUrl = baseUrl
+    ? `${baseUrl}/api/v1/pipeline_prospects?pipeline_id=${pipelineId}&page=0`
+    : null;
+
+  // Try a live fetch if env vars are present
+  let fetchResult: unknown = null;
+  if (builtUrl && token) {
+    try {
+      const res = await fetch(builtUrl, {
+        headers: { Authorization: `Bearer ${token}`, Accept: "application/json" },
+        cache: "no-store",
+      });
+      const body = await res.text();
+      fetchResult = { status: res.status, bodyPreview: body.slice(0, 300) };
+    } catch (e) {
+      fetchResult = { threw: String(e) };
+    }
   }
 
-  try {
-    const { createClient } = await import("@supabase/supabase-js");
-    const supabase = createClient(url, key);
-    const { data, error } = await supabase.from("deals").select("id").limit(1);
-    return NextResponse.json({ ok: !error, supabaseError: error?.message ?? null, rowCount: data?.length ?? 0 });
-  } catch (e) {
-    return NextResponse.json({ ok: false, threw: String(e) });
-  }
+  return NextResponse.json({
+    DECILE_HUB_BASE_URL: baseUrl ?? "MISSING",
+    DECILE_HUB_API_TOKEN: token ? "SET" : "MISSING",
+    builtUrl,
+    fetchResult,
+  });
 }
