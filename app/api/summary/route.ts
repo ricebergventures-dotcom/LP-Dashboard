@@ -1,7 +1,5 @@
 import { NextResponse } from "next/server";
 import { subDays, startOfDay, endOfDay, format } from "date-fns";
-
-export const dynamic = "force-dynamic";
 import { createRouteClient } from "@/lib/supabase-server";
 import {
   getOpenAIClient,
@@ -15,6 +13,8 @@ import {
   buildStageRecord,
 } from "@/utils/aggregations";
 import type { Deal, WeeklySummary, ApiResponse, Profile } from "@/types";
+
+export const dynamic = "force-dynamic";
 
 export async function GET() {
   const supabase = createRouteClient();
