@@ -1,7 +1,6 @@
 // Decile Hub API integration.
-// Reads DECILE_HUB_API_TOKEN and DECILE_HUB_BASE_URL from the environment at
-// module load time so any misconfiguration surfaces immediately at startup, not
-// silently at request time.
+// Env vars are read at request time (inside functions), not at module load,
+// so the build succeeds on Vercel before runtime env vars are injected.
 
 import type { Deal, DealStage, DealStatus } from "@/types";
 import { isDealStage, isDealStatus } from "@/types";
@@ -13,14 +12,15 @@ function requireEnv(name: string): string {
   if (!value) {
     throw new Error(
       `Missing required environment variable "${name}". ` +
-        `Add it to .env.local and restart the dev server.`
+        `Add it to .env.local (local) or Vercel project settings (production).`
     );
   }
   return value;
 }
 
-const API_TOKEN = requireEnv("DECILE_HUB_API_TOKEN");
-const BASE_URL = requireEnv("DECILE_HUB_BASE_URL");
+// Resolved lazily at request time — not at module load / build time.
+function getApiToken(): string { return requireEnv("DECILE_HUB_API_TOKEN"); }
+function getBaseUrl(): string  { return requireEnv("DECILE_HUB_BASE_URL"); }
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
@@ -109,7 +109,7 @@ function buildUrl(page: number, pageSize: number, since?: Date): string {
   if (since) {
     params.set("since", since.toISOString());
   }
-  return `${BASE_URL}/deals?${params.toString()}`;
+  return `${getBaseUrl()}/deals?${params.toString()}`;
 }
 
 async function fetchPage(url: string): Promise<DecileHubListResponse> {
@@ -148,7 +148,7 @@ async function fetchPage(url: string): Promise<DecileHubListResponse> {
 async function callApi(url: string): Promise<Response> {
   return fetch(url, {
     headers: {
-      Authorization: `Bearer ${API_TOKEN}`,
+      Authorization: `Bearer ${getApiToken()}`,
       Accept: "application/json",
     },
     // No caching — we want fresh data on every sync run.
