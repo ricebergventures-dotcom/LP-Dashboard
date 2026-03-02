@@ -68,13 +68,13 @@ export function CompanyInsightsSheet({ companyName, onClose }: Props) {
               {/* Tags row */}
               <div className="flex flex-wrap gap-2">
                 {insights.sector && insights.sector !== "Unknown" && (
-                  <Badge variant="outline" className="text-xs">{insights.sector}</Badge>
+                  <Badge variant="default" className="text-xs">{insights.sector}</Badge>
                 )}
                 {insights.geography && insights.geography !== "Unknown" && (
-                  <Badge variant="outline" className="text-xs">{insights.geography}</Badge>
+                  <Badge variant="default" className="text-xs">{insights.geography}</Badge>
                 )}
                 {insights.fundingStage && insights.fundingStage !== "Unknown" && (
-                  <Badge variant="outline" className="text-xs">{insights.fundingStage}</Badge>
+                  <Badge variant="default" className="text-xs">{insights.fundingStage}</Badge>
                 )}
               </div>
 
