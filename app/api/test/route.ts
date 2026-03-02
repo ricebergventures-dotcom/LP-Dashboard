@@ -26,10 +26,26 @@ export async function GET() {
     }
   }
 
+  // Also check if Supabase anon reads work
+  const supabaseUrl = process.env.NEXT_PUBLIC_SUPABASE_URL;
+  const supabaseKey = process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY;
+  let supabaseResult: unknown = null;
+  if (supabaseUrl && supabaseKey) {
+    try {
+      const { createClient } = await import("@supabase/supabase-js");
+      const sb = createClient(supabaseUrl, supabaseKey);
+      const { data, error, count } = await sb.from("deals").select("id", { count: "exact" }).limit(1);
+      supabaseResult = { error: error?.message ?? null, rowCount: data?.length ?? 0, totalCount: count };
+    } catch (e) {
+      supabaseResult = { threw: String(e) };
+    }
+  }
+
   return NextResponse.json({
     DECILE_HUB_BASE_URL: baseUrl ?? "MISSING",
     DECILE_HUB_API_TOKEN: token ? "SET" : "MISSING",
     builtUrl,
     fetchResult,
+    supabaseResult,
   });
 }
