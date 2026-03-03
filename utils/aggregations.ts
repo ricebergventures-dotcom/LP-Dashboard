@@ -12,6 +12,7 @@ import type {
   DashboardMetrics,
   SectorCount,
   StageCount,
+  GeographyCount,
   AggregatedData,
 } from "@/types";
 
@@ -87,12 +88,24 @@ export function computeStageCounts(deals: Deal[]): StageCount[] {
     .sort((a, b) => b.count - a.count);
 }
 
-/** Returns metrics, sector counts, and stage counts in a single pass. */
+export function computeGeographyCounts(deals: Deal[]): GeographyCount[] {
+  const map = new Map<string, number>();
+  for (const deal of deals) {
+    if (!deal.geography || deal.geography === "Unknown") continue;
+    map.set(deal.geography, (map.get(deal.geography) ?? 0) + 1);
+  }
+  return Array.from(map.entries())
+    .map(([geography, count]) => ({ geography, count }))
+    .sort((a, b) => b.count - a.count);
+}
+
+/** Returns metrics, sector counts, stage counts, and geography counts. */
 export function computeAggregatedData(deals: Deal[]): AggregatedData {
   return {
     metrics: computeMetrics(deals),
     sectors: computeSectorCounts(deals),
     stages: computeStageCounts(deals),
+    geographies: computeGeographyCounts(deals),
   };
 }
 

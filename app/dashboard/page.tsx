@@ -4,9 +4,10 @@ import { TopBar } from "@/components/layout/TopBar";
 import { MetricsRow, MetricsRowSkeleton } from "@/components/dashboard/MetricsRow";
 import { SectorBarChart, SectorBarChartSkeleton } from "@/components/dashboard/SectorBarChart";
 import { StageDonutChart, StageDonutChartSkeleton } from "@/components/dashboard/StageDonutChart";
+import { GeographyBarChart, GeographyBarChartSkeleton } from "@/components/dashboard/GeographyBarChart";
 import { WeeklySummaryPanel, WeeklySummaryPanelSkeleton } from "@/components/dashboard/WeeklySummaryPanel";
 import { TransactionsTable, TransactionsTableSkeleton } from "@/components/dashboard/TransactionsTable";
-import { computeMetrics, computeSectorCounts, computeStageCounts } from "@/utils/aggregations";
+import { computeMetrics, computeSectorCounts, computeStageCounts, computeGeographyCounts } from "@/utils/aggregations";
 import { Button } from "@/components/ui/button";
 import { Download } from "lucide-react";
 import type { Deal, WeeklySummary } from "@/types";
@@ -34,6 +35,7 @@ async function DashboardContent() {
   const metrics = computeMetrics(deals);
   const sectors = computeSectorCounts(deals);
   const stages = computeStageCounts(deals);
+  const geographies = computeGeographyCounts(deals);
   const recentDeals = deals.slice(0, 20);
 
   return (
@@ -48,6 +50,8 @@ async function DashboardContent() {
             <SectorBarChart data={sectors} />
             <StageDonutChart data={stages} />
           </div>
+
+          <GeographyBarChart data={geographies} />
 
           <WeeklySummaryPanel summary={summary} isAdmin={false} />
 
@@ -80,6 +84,7 @@ export default function DashboardPage() {
                 <SectorBarChartSkeleton />
                 <StageDonutChartSkeleton />
               </div>
+              <GeographyBarChartSkeleton />
               <WeeklySummaryPanelSkeleton />
               <TransactionsTableSkeleton />
             </div>

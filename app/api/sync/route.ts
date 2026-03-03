@@ -12,6 +12,7 @@
 import { NextResponse } from "next/server";
 import { createRouteClient } from "@/lib/supabase-server";
 import { fetchDealsFromDecileHub, mapDecileHubDeal, DecileHubError } from "@/lib/decile-hub";
+import { enrichBatch } from "@/lib/enrichment";
 import { chunkArray } from "@/utils/csv-parser";
 import type { ApiResponse, WeeklySummary } from "@/types";
 
@@ -23,6 +24,7 @@ export interface SyncResult {
   fetched: number;
   inserted: number;
   skipped: number;
+  enriched: number;
 }
 
 // Vercel Cron calls GET — verify the cron secret to prevent abuse.
@@ -90,6 +92,7 @@ async function runSync() {
   let inserted = 0;
   let skipped = 0;
   let firstError: string | null = null;
+  const insertedRows: { id: string; company_name: string }[] = [];
 
   for (const chunk of chunks) {
     const { data, error } = await supabase
@@ -98,7 +101,7 @@ async function runSync() {
         onConflict: "company_name,date_added",
         ignoreDuplicates: true,
       })
-      .select("id");
+      .select("id, company_name");
 
     if (error) {
       console.error("[sync] Supabase upsert error:", error.message);
@@ -108,10 +111,24 @@ async function runSync() {
       const upserted = data?.length ?? 0;
       inserted += upserted;
       skipped += chunk.length - upserted;
+      if (data) insertedRows.push(...data);
+    }
+  }
+
+  // ── Enrich newly inserted deals with sector + geography ───────────────────
+  let enriched = 0;
+  if (insertedRows.length > 0) {
+    const enrichmentMap = await enrichBatch(insertedRows, 5);
+    for (const [id, { sector, geography }] of enrichmentMap) {
+      const { error: updateError } = await supabase
+        .from("deals")
+        .update({ sector, geography })
+        .eq("id", id);
+      if (!updateError) enriched++;
     }
   }
 
   return NextResponse.json<ApiResponse<SyncResult & { firstError?: string }>>({
-    data: { fetched, inserted, skipped, ...(firstError ? { firstError } : {}) },
+    data: { fetched, inserted, skipped, enriched, ...(firstError ? { firstError } : {}) },
   });
 }

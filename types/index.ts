@@ -100,12 +100,18 @@ export interface StageCount {
   count: number;
 }
 
+export interface GeographyCount {
+  geography: string;
+  count: number;
+}
+
 /** Pre-aggregated snapshot used by the PDF export and any route that needs
  *  metrics + sector breakdown + stage breakdown in one call. */
 export interface AggregatedData {
   metrics: DashboardMetrics;
   sectors: SectorCount[];
   stages: StageCount[];
+  geographies: GeographyCount[];
 }
 
 // ─── CSV / Upload types ───────────────────────────────────────────────────────
