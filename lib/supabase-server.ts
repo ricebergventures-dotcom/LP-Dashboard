@@ -1,5 +1,6 @@
 import { createClient } from "@supabase/supabase-js";
 import { createServerClient as createSSRServerClient } from "@supabase/ssr";
+import type { CookieOptions } from "@supabase/ssr";
 import type { NextRequest, NextResponse } from "next/server";
 
 // Simple anon client for server-side reads.
@@ -39,7 +40,7 @@ export function createMiddlewareClient(
         getAll() {
           return request.cookies.getAll();
         },
-        setAll(cookiesToSet) {
+        setAll(cookiesToSet: { name: string; value: string; options?: CookieOptions }[]) {
           cookiesToSet.forEach(({ name, value }) =>
             request.cookies.set(name, value)
           );
