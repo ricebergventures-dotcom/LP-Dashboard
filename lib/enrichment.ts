@@ -8,29 +8,34 @@ export interface EnrichmentResult {
   geography: string;
 }
 
-const ENRICH_SYSTEM = `Given a startup company name, respond ONLY with a raw JSON object (no markdown, no explanation):
-{
-  "sector": "<one of: AI/ML, Fintech, Healthtech, SaaS, Climate Tech, Consumer, Deep Tech, Crypto/Web3, Other>",
-  "geography": "<primary country or region, e.g. United States, Europe, India, Southeast Asia, Latin America>"
-}`;
+const ENRICH_SYSTEM = `You are a startup classifier. Given a company name, return ONLY a JSON object with no extra text, no markdown, no explanation.
+
+Use exactly this format:
+{"sector":"<value>","geography":"<value>"}
+
+sector must be one of: AI/ML, Fintech, Healthtech, SaaS, Climate Tech, Consumer, Deep Tech, Crypto/Web3, Other
+geography must be the primary country or region (e.g. United States, United Kingdom, Europe, India, Southeast Asia, Latin America, Global)
+If uncertain about geography, use your best guess based on the company name — never leave it empty.`;
 
 export async function enrichCompany(companyName: string): Promise<EnrichmentResult> {
   const text = await generateText({
     systemPrompt: ENRICH_SYSTEM,
-    userMessage: `Company: ${companyName}`,
+    userMessage: companyName,
     temperature: 0,
-    maxTokens: 80,
+    maxTokens: 120,
   });
 
   try {
-    const clean = text.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim();
-    const json = JSON.parse(clean) as { sector?: unknown; geography?: unknown };
+    // Find the first JSON object anywhere in the response (handles fences, preamble, etc.)
+    const match = text.match(/\{[\s\S]*?\}/);
+    if (!match) throw new Error("no JSON object found");
+    const json = JSON.parse(match[0]) as { sector?: unknown; geography?: unknown };
     return {
       sector: typeof json.sector === "string" && json.sector ? json.sector : "Other",
-      geography: typeof json.geography === "string" && json.geography ? json.geography : "Unknown",
+      geography: typeof json.geography === "string" && json.geography ? json.geography : "Global",
     };
   } catch {
-    return { sector: "Other", geography: "Unknown" };
+    return { sector: "Other", geography: "Global" };
   }
 }
 

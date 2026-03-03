@@ -18,15 +18,23 @@ export interface EnrichResult {
   remaining: number;
 }
 
-export async function POST() {
+export async function POST(request: Request) {
   const supabase = createRouteClient();
+  const { searchParams } = new URL(request.url);
+  const force = searchParams.get("force") === "true";
 
-  // Fetch deals with empty sector or geography, limited per call
-  const { data: deals, error } = await supabase
-    .from("deals")
-    .select("id, company_name")
-    .or("sector.is.null,sector.eq.,geography.is.null,geography.eq.")
-    .limit(BATCH_LIMIT);
+  // Normal mode: only deals missing sector or geography.
+  // Force mode: also re-enrich deals with placeholder values ("Other", "Unknown", "Global").
+  const { data: deals, error } = force
+    ? await supabase
+        .from("deals")
+        .select("id, company_name")
+        .limit(BATCH_LIMIT)
+    : await supabase
+        .from("deals")
+        .select("id, company_name")
+        .or("sector.is.null,sector.eq.,sector.eq.Other,geography.is.null,geography.eq.,geography.eq.Unknown")
+        .limit(BATCH_LIMIT);
 
   if (error) {
     return NextResponse.json<ApiResponse<never>>(
