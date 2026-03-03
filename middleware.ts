@@ -1,45 +1,68 @@
 import { NextResponse, type NextRequest } from "next/server";
-import { createMiddlewareClient } from "@/lib/supabase-server";
+import { createServerClient } from "@supabase/ssr";
 
 export async function middleware(request: NextRequest) {
   const response = NextResponse.next({ request });
-  const supabase = createMiddlewareClient(request, response);
 
-  // Refresh session if it exists (keeps cookies fresh)
+  const supabase = createServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll: () => request.cookies.getAll(),
+        setAll: (cookies) =>
+          cookies.forEach(({ name, value, options }) => {
+            request.cookies.set(name, value);
+            response.cookies.set(name, value, options);
+          }),
+      },
+    }
+  );
+
   const {
-    data: { user },
-  } = await supabase.auth.getUser();
+    data: { session },
+  } = await supabase.auth.getSession();
 
   const { pathname } = request.nextUrl;
 
   if (pathname.startsWith("/dashboard")) {
-    // Not logged in → go to login
-    if (!user) {
+    if (!session) {
       return NextResponse.redirect(new URL("/auth/login", request.url));
     }
 
-    // Logged in but not approved → go to pending
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("approved")
-      .eq("id", user.id)
-      .single();
+    // Check approval via raw REST fetch using the user's access token
+    const profileRes = await fetch(
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/profiles?id=eq.${session.user.id}&select=approved`,
+      {
+        headers: {
+          apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+          Authorization: `Bearer ${session.access_token}`,
+        },
+      }
+    );
 
-    if (!profile?.approved) {
+    const profiles = (await profileRes.json()) as { approved: boolean }[];
+    const approved = profiles[0]?.approved === true;
+
+    if (!approved) {
       return NextResponse.redirect(new URL("/auth/pending", request.url));
     }
   }
 
-  // Logged-in user hitting auth pages → redirect to dashboard
+  // Approved logged-in user hitting auth pages → redirect to dashboard
   if (pathname.startsWith("/auth/login") || pathname.startsWith("/auth/signup")) {
-    if (user) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("approved")
-        .eq("id", user.id)
-        .single();
-
-      if (profile?.approved) {
+    if (session) {
+      const profileRes = await fetch(
+        `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/profiles?id=eq.${session.user.id}&select=approved`,
+        {
+          headers: {
+            apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+            Authorization: `Bearer ${session.access_token}`,
+          },
+        }
+      );
+      const profiles = (await profileRes.json()) as { approved: boolean }[];
+      if (profiles[0]?.approved === true) {
         return NextResponse.redirect(new URL("/dashboard", request.url));
       }
     }
