@@ -4,7 +4,7 @@
 
 const BASE = "https://generativelanguage.googleapis.com/v1beta/models";
 
-export const GEMINI_MODEL = "gemini-2.0-flash";
+export const GEMINI_MODEL = "gemini-2.5-flash";
 
 function getApiKey(): string {
   const key = process.env.GEMINI_API_KEY;
