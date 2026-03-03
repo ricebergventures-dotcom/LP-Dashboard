@@ -17,15 +17,26 @@ const ENRICH_PROMPT = `Given a startup company name, respond ONLY with a raw JSO
 export async function enrichCompany(companyName: string): Promise<EnrichmentResult> {
   const openai = getOpenAIClient();
 
-  const completion = await openai.chat.completions.create({
-    model: SUMMARY_MODEL,
-    temperature: 0,
-    max_tokens: 80,
-    messages: [
-      { role: "system", content: ENRICH_PROMPT },
-      { role: "user", content: `Company: ${companyName}` },
-    ],
-  });
+  const controller = new AbortController();
+  const timeout = setTimeout(() => controller.abort(), 8000);
+
+  let completion;
+  try {
+    completion = await openai.chat.completions.create(
+      {
+        model: SUMMARY_MODEL,
+        temperature: 0,
+        max_tokens: 80,
+        messages: [
+          { role: "system", content: ENRICH_PROMPT },
+          { role: "user", content: `Company: ${companyName}` },
+        ],
+      },
+      { signal: controller.signal }
+    );
+  } finally {
+    clearTimeout(timeout);
+  }
 
   const text = (completion.choices[0]?.message?.content ?? "{}").trim();
   try {
