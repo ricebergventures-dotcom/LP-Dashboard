@@ -77,15 +77,60 @@ export function computeSectorCounts(deals: Deal[]): SectorCount[] {
     .sort((a, b) => b.count - a.count);
 }
 
+// Maps raw Decile Hub stage names → grouped display labels.
+// Any unlisted stage falls into "Other".
+const STAGE_GROUP_MAP: Record<string, string> = {
+  // Added — new prospects entering the funnel
+  "Added":                        "Added",
+  "Reach Out to Cold Lead":       "Added",
+  "Reach Out to Inbound Lead":    "Added",
+  "Set Up Call":                  "Added",
+  "Call Scheduled [Hold]":        "Added",
+  "Stealth Startups":             "Added",
+
+  // Developing Deal Memo — active evaluation
+  "Tracking for Future Rounds":   "Developing Deal Memo",
+  "Thesis Assessment Qualified":  "Developing Deal Memo",
+  "Company Review [Hold]":        "Developing Deal Memo",
+  "Review Opportunity [Hold]":    "Developing Deal Memo",
+  "IC Evaluation":                "Developing Deal Memo",
+  "Collect Materials":            "Developing Deal Memo",
+  "Develop Deal Memo [Hold]":     "Developing Deal Memo",
+  "Start Due Diligence":          "Developing Deal Memo",
+
+  // Out of Thesis
+  "Out of Thesis but Opportunistic": "Out of Thesis",
+  "Missed Opportunity":           "Out of Thesis",
+
+  // Failed Review
+  "Failed Review":                "Failed Review",
+  "Declined by GP":               "Failed Review",
+  "No Response":                  "Failed Review",
+  "Failed Due Diligence":         "Failed Review",
+  "Unresponsive":                 "Failed Review",
+
+  // Invested
+  "Investment Closed [Hold]":     "Invested",
+  "Send Wire":                    "Invested",
+  "Invest through Syndicate":     "Invested",
+};
+
+export function groupStage(stage: string): string {
+  return STAGE_GROUP_MAP[stage] ?? "Other";
+}
+
 export function computeStageCounts(deals: Deal[]): StageCount[] {
   const map = new Map<string, number>();
   for (const deal of deals) {
     if (!deal.stage) continue;
-    map.set(deal.stage, (map.get(deal.stage) ?? 0) + 1);
+    const group = groupStage(deal.stage);
+    map.set(group, (map.get(group) ?? 0) + 1);
   }
-  return Array.from(map.entries())
-    .map(([stage, count]) => ({ stage, count }))
-    .sort((a, b) => b.count - a.count);
+  // Fixed display order
+  const ORDER = ["Added", "Developing Deal Memo", "Out of Thesis", "Failed Review", "Invested", "Other"];
+  return ORDER
+    .filter((g) => map.has(g))
+    .map((g) => ({ stage: g, count: map.get(g)! }));
 }
 
 export function computeGeographyCounts(deals: Deal[]): GeographyCount[] {
