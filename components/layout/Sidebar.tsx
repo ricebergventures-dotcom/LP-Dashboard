@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, ArrowLeftRight, Upload, Settings, LogOut } from "lucide-react";
+import { LayoutDashboard, ArrowLeftRight, Upload, Settings, LogOut, Users } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
@@ -14,6 +14,7 @@ const NAV_ITEMS = [
   { label: "Dashboard",     href: "/dashboard",              icon: LayoutDashboard },
   { label: "Transactions",  href: "/dashboard/transactions", icon: ArrowLeftRight   },
   { label: "Upload",        href: "/dashboard/upload",       icon: Upload, adminOnly: true },
+  { label: "Users",         href: "/dashboard/admin",        icon: Users,  adminOnly: true },
   { label: "Settings",      href: "/dashboard/settings",     icon: Settings         },
 ];
 
