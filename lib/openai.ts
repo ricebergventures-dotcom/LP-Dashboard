@@ -18,7 +18,7 @@ export function getOpenAIClient(): OpenAI {
   return _client;
 }
 
-export const SUMMARY_MODEL = "gemini-2.0-flash" as const;
+export const SUMMARY_MODEL = "gemini-1.5-flash" as const;
 export const SUMMARY_TEMPERATURE = 0.3;
 export const SUMMARY_MAX_TOKENS = 200;
 
