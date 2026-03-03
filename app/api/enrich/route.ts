@@ -43,14 +43,17 @@ export async function POST() {
   }
 
   const enrichmentMap = await enrichBatch(deals!, 5);
+  const geminiReturned = enrichmentMap.size;
 
   let enriched = 0;
+  let firstUpdateError: string | null = null;
   for (const [id, { sector, geography }] of Array.from(enrichmentMap.entries())) {
     const { error: updateError } = await supabase
       .from("deals")
       .update({ sector, geography })
       .eq("id", id);
     if (!updateError) enriched++;
+    else if (!firstUpdateError) firstUpdateError = updateError.message;
   }
 
   // Count how many still need enrichment
@@ -59,7 +62,13 @@ export async function POST() {
     .select("id", { count: "exact", head: true })
     .or("sector.is.null,sector.eq.,geography.is.null,geography.eq.");
 
-  return NextResponse.json<ApiResponse<EnrichResult>>({
-    data: { total, enriched, remaining: count ?? 0 },
+  return NextResponse.json({
+    data: {
+      total,
+      geminiReturned,
+      enriched,
+      remaining: count ?? 0,
+      ...(firstUpdateError ? { firstUpdateError } : {}),
+    },
   });
 }
