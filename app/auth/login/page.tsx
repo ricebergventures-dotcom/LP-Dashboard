@@ -3,6 +3,7 @@
 import { useState } from "react";
 import { useRouter } from "next/navigation";
 import Link from "next/link";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
@@ -55,14 +56,12 @@ export default function LoginPage() {
 
   return (
     <div className="w-full max-w-sm space-y-8">
-      <div className="space-y-1">
-        <p className="font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-          {fundName}
-        </p>
-        <h1 className="text-lg font-medium text-foreground">LP Reporting</h1>
-        <p className="text-sm text-muted-foreground">
-          Sign in to access the dashboard
-        </p>
+      <div className="space-y-3">
+        <Image src="/logo.png" alt={fundName} width={160} height={48} className="object-contain" priority />
+        <div>
+          <h1 className="text-lg font-medium text-foreground">LP Reporting</h1>
+          <p className="text-sm text-muted-foreground">Sign in to access the dashboard</p>
+        </div>
       </div>
 
       <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">

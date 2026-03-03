@@ -1,6 +1,7 @@
 "use client";
 
 import { useRouter } from "next/navigation";
+import Image from "next/image";
 import { createClient } from "@/lib/supabase";
 import { Button } from "@/components/ui/button";
 
@@ -18,13 +19,9 @@ export default function PendingPage() {
 
   return (
     <div className="w-full max-w-sm space-y-8 text-center">
-      <div className="space-y-1">
-        <p className="font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-          {fundName}
-        </p>
-        <h1 className="text-lg font-medium text-foreground">
-          Awaiting approval
-        </h1>
+      <div className="space-y-3 flex flex-col items-center">
+        <Image src="/logo.png" alt={fundName} width={160} height={48} className="object-contain" priority />
+        <h1 className="text-lg font-medium text-foreground">Awaiting approval</h1>
       </div>
 
       <div className="space-y-3">

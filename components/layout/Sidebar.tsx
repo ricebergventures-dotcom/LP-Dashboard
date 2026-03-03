@@ -1,6 +1,7 @@
 "use client";
 
 import Link from "next/link";
+import Image from "next/image";
 import { usePathname } from "next/navigation";
 import { LayoutDashboard, ArrowLeftRight, Upload, Settings, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
@@ -30,12 +31,17 @@ export function Sidebar() {
 
   return (
     <aside className="flex h-screen w-[220px] shrink-0 flex-col border-r border-border bg-background">
-      {/* Fund name */}
+      {/* Logo */}
       <div className="border-b border-border px-5 py-4">
-        <p className="font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
-          {fundName}
-        </p>
-        <p className="mt-0.5 text-[10px] text-muted-foreground/50 tracking-wide">
+        <Image
+          src="/logo.png"
+          alt={fundName}
+          width={140}
+          height={40}
+          className="object-contain"
+          priority
+        />
+        <p className="mt-1.5 text-[10px] text-muted-foreground/50 tracking-wide">
           LP Reporting
         </p>
       </div>
