@@ -1,5 +1,5 @@
 import { NextResponse } from "next/server";
-import { getOpenAIClient, SUMMARY_MODEL } from "@/lib/openai";
+import { generateText, GEMINI_MODEL } from "@/lib/gemini";
 import type { ApiResponse } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -38,36 +38,22 @@ export async function POST(request: Request) {
     );
   }
 
-  let openai;
+  let text: string;
   try {
-    openai = getOpenAIClient();
-  } catch (e) {
-    return NextResponse.json<ApiResponse<never>>(
-      { error: e instanceof Error ? e.message : "Gemini client init failed" },
-      { status: 500 }
-    );
-  }
-
-  let completion;
-  try {
-    completion = await openai.chat.completions.create({
-      model: SUMMARY_MODEL,
+    text = await generateText({
+      systemPrompt: SYSTEM_PROMPT,
+      userMessage: `Company: ${company_name}`,
       temperature: 0.2,
-      max_tokens: 600,
-      messages: [
-        { role: "system", content: SYSTEM_PROMPT },
-        { role: "user", content: `Company: ${company_name}` },
-      ],
+      maxTokens: 600,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Gemini API call failed";
     return NextResponse.json<ApiResponse<never>>({ error: msg }, { status: 502 });
   }
 
-  const text = completion.choices[0]?.message?.content?.trim() ?? "{}";
-
   try {
-    const insights = JSON.parse(text) as CompanyInsights;
+    const clean = text.replace(/^```(?:json)?\n?/, "").replace(/\n?```$/, "").trim();
+    const insights = JSON.parse(clean) as CompanyInsights;
     return NextResponse.json<ApiResponse<CompanyInsights>>({ data: insights });
   } catch {
     // Gemini returned non-JSON — wrap as description

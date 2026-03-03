@@ -1,13 +1,8 @@
 import { NextResponse } from "next/server";
 import { subDays, startOfDay, endOfDay, format } from "date-fns";
 import { createRouteClient } from "@/lib/supabase-server";
-import {
-  getOpenAIClient,
-  SUMMARY_MODEL,
-  SUMMARY_TEMPERATURE,
-  SUMMARY_MAX_TOKENS,
-  SUMMARY_SYSTEM_PROMPT,
-} from "@/lib/openai";
+import { generateText } from "@/lib/gemini";
+import { SUMMARY_TEMPERATURE, SUMMARY_MAX_TOKENS, SUMMARY_SYSTEM_PROMPT } from "@/lib/openai";
 import {
   buildSectorRecord,
   buildStageRecord,
@@ -82,18 +77,12 @@ export async function POST() {
     `\nStage distribution:\n${stageLines || "  (none)"}`,
   ].join("\n");
 
-  const openai = getOpenAIClient();
-  const completion = await openai.chat.completions.create({
-    model: SUMMARY_MODEL,
+  const summaryText = await generateText({
+    systemPrompt: SUMMARY_SYSTEM_PROMPT,
+    userMessage,
     temperature: SUMMARY_TEMPERATURE,
-    max_tokens: SUMMARY_MAX_TOKENS,
-    messages: [
-      { role: "system", content: SUMMARY_SYSTEM_PROMPT },
-      { role: "user", content: userMessage },
-    ],
+    maxTokens: SUMMARY_MAX_TOKENS,
   });
-
-  const summaryText = completion.choices[0]?.message?.content?.trim() ?? "";
 
   const { data: saved, error: saveErr } = await supabase
     .from("weekly_summaries")
