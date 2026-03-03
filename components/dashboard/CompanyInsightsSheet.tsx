@@ -48,7 +48,7 @@ export function CompanyInsightsSheet({ companyName, onClose }: Props) {
           <SheetTitle className="text-base font-semibold leading-snug pr-6">
             {companyName}
           </SheetTitle>
-          <p className="text-xs text-muted-foreground">AI-generated analysis · Gemini 2.5 Flash</p>
+          <p className="text-xs text-muted-foreground">AI-generated analysis · Gemini 2.0 Flash</p>
         </SheetHeader>
 
         <div className="mt-6 space-y-5">
