@@ -3,7 +3,7 @@
 
 import { NextResponse } from "next/server";
 import { createRouteClient } from "@/lib/supabase-server";
-import { enrichBatch } from "@/lib/enrichment";
+import { enrichBatch, enrichCompany } from "@/lib/enrichment";
 import type { ApiResponse } from "@/types";
 
 export const dynamic = "force-dynamic";
@@ -40,6 +40,17 @@ export async function POST() {
     return NextResponse.json<ApiResponse<EnrichResult>>({
       data: { total: 0, enriched: 0, remaining: 0 },
     });
+  }
+
+  // Test single call first to surface any Gemini errors
+  let geminiTestError: string | null = null;
+  try {
+    await enrichCompany(deals![0].company_name);
+  } catch (e) {
+    geminiTestError = e instanceof Error ? e.message : String(e);
+  }
+  if (geminiTestError) {
+    return NextResponse.json({ error: `Gemini error: ${geminiTestError}` }, { status: 502 });
   }
 
   const enrichmentMap = await enrichBatch(deals!, 5);
