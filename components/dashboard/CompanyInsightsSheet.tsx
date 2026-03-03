@@ -37,7 +37,7 @@ export function CompanyInsightsSheet({ companyName, onClose }: Props) {
         if (r.data) setInsights(r.data as CompanyInsights);
         else setError(r.error ?? "Failed to load insights");
       })
-      .catch(() => setError("Network error"))
+      .catch((err: unknown) => setError(err instanceof Error ? err.message : "Network error"))
       .finally(() => setLoading(false));
   }, [companyName]);
 

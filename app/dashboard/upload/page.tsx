@@ -1,6 +1,7 @@
 import { TopBar } from "@/components/layout/TopBar";
 import { CsvUploader } from "@/components/upload/CsvUploader";
 import { DecileSyncButton } from "@/components/upload/DecileSyncButton";
+import { EnrichButton } from "@/components/upload/EnrichButton";
 
 export const metadata = { title: "Upload" };
 export const dynamic = "force-dynamic";
@@ -30,6 +31,19 @@ export default function UploadPage() {
             </p>
             <div className="pt-2">
               <DecileSyncButton />
+            </div>
+          </div>
+
+          <div className="pt-6 border-t border-border space-y-1">
+            <h2 className="text-sm font-medium text-foreground">Enrich Deal Data</h2>
+            <p className="text-sm text-muted-foreground">
+              Fill in missing sector and geography for deals that haven&apos;t been
+              enriched yet. Uses Gemini AI — run this after syncing or uploading
+              if the sector &amp; geography charts are empty. Processes up to 20 deals
+              per run; repeat until all are enriched.
+            </p>
+            <div className="pt-2">
+              <EnrichButton />
             </div>
           </div>
         </div>

@@ -38,17 +38,31 @@ export async function POST(request: Request) {
     );
   }
 
-  const openai = getOpenAIClient();
+  let openai;
+  try {
+    openai = getOpenAIClient();
+  } catch (e) {
+    return NextResponse.json<ApiResponse<never>>(
+      { error: e instanceof Error ? e.message : "Gemini client init failed" },
+      { status: 500 }
+    );
+  }
 
-  const completion = await openai.chat.completions.create({
-    model: SUMMARY_MODEL,
-    temperature: 0.2,
-    max_tokens: 600,
-    messages: [
-      { role: "system", content: SYSTEM_PROMPT },
-      { role: "user", content: `Company: ${company_name}` },
-    ],
-  });
+  let completion;
+  try {
+    completion = await openai.chat.completions.create({
+      model: SUMMARY_MODEL,
+      temperature: 0.2,
+      max_tokens: 600,
+      messages: [
+        { role: "system", content: SYSTEM_PROMPT },
+        { role: "user", content: `Company: ${company_name}` },
+      ],
+    });
+  } catch (e) {
+    const msg = e instanceof Error ? e.message : "Gemini API call failed";
+    return NextResponse.json<ApiResponse<never>>({ error: msg }, { status: 502 });
+  }
 
   const text = completion.choices[0]?.message?.content?.trim() ?? "{}";
 
