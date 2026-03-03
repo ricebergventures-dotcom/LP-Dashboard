@@ -8,19 +8,25 @@ import type { ApiResponse } from "@/types";
 
 export const dynamic = "force-dynamic";
 
+// Process 20 per call to stay within Vercel's function timeout.
+// Run the endpoint multiple times until remaining reaches 0.
+const BATCH_LIMIT = 20;
+
 export interface EnrichResult {
   total: number;
   enriched: number;
+  remaining: number;
 }
 
 export async function POST() {
   const supabase = createRouteClient();
 
-  // Fetch all deals with empty sector or geography
+  // Fetch deals with empty sector or geography, limited per call
   const { data: deals, error } = await supabase
     .from("deals")
     .select("id, company_name")
-    .or("sector.is.null,sector.eq.,geography.is.null,geography.eq.");
+    .or("sector.is.null,sector.eq.,geography.is.null,geography.eq.")
+    .limit(BATCH_LIMIT);
 
   if (error) {
     return NextResponse.json<ApiResponse<never>>(
@@ -32,7 +38,7 @@ export async function POST() {
   const total = deals?.length ?? 0;
   if (total === 0) {
     return NextResponse.json<ApiResponse<EnrichResult>>({
-      data: { total: 0, enriched: 0 },
+      data: { total: 0, enriched: 0, remaining: 0 },
     });
   }
 
@@ -47,7 +53,13 @@ export async function POST() {
     if (!updateError) enriched++;
   }
 
+  // Count how many still need enrichment
+  const { count } = await supabase
+    .from("deals")
+    .select("id", { count: "exact", head: true })
+    .or("sector.is.null,sector.eq.,geography.is.null,geography.eq.");
+
   return NextResponse.json<ApiResponse<EnrichResult>>({
-    data: { total, enriched },
+    data: { total, enriched, remaining: count ?? 0 },
   });
 }
