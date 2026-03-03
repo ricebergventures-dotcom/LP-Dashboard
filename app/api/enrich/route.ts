@@ -52,7 +52,7 @@ export async function POST() {
   let enriched = 0;
   let errors = 0;
 
-  for (const [id, { sector, geography }] of enrichmentMap) {
+  for (const [id, { sector, geography }] of Array.from(enrichmentMap.entries())) {
     const { error: updateError } = await supabase
       .from("deals")
       .update({ sector, geography })

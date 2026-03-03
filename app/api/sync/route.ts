@@ -119,7 +119,7 @@ async function runSync() {
   let enriched = 0;
   if (insertedRows.length > 0) {
     const enrichmentMap = await enrichBatch(insertedRows, 5);
-    for (const [id, { sector, geography }] of enrichmentMap) {
+    for (const [id, { sector, geography }] of Array.from(enrichmentMap.entries())) {
       const { error: updateError } = await supabase
         .from("deals")
         .update({ sector, geography })
