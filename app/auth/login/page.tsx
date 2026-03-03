@@ -33,21 +33,7 @@ export default function LoginPage() {
       return;
     }
 
-    // Check approval status
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("approved")
-        .eq("id", user.id)
-        .single();
-
-      if (!profile?.approved) {
-        router.push("/auth/pending");
-        return;
-      }
-    }
-
+    // Middleware handles the approval gate — just go to dashboard
     router.push("/dashboard");
     router.refresh();
   };
