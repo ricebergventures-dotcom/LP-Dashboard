@@ -21,8 +21,8 @@ export function MetricsRow({ metrics }: MetricsRowProps) {
 
   return (
     <div className="flex border border-border divide-x divide-border">
-      <MetricCell title="Deals This Week" value={formatCount(dealsThisWeek)} />
-      <MetricCell title="Deals This Month" value={formatCount(dealsThisMonth)} />
+      <MetricCell title="Inbound This Week" value={formatCount(dealsThisWeek)} />
+      <MetricCell title="Inbound This Month" value={formatCount(dealsThisMonth)} />
       <MetricCell title="Active Pipeline" value={formatCount(activePipeline)} />
       <MetricCell
         title="Week-over-Week"
