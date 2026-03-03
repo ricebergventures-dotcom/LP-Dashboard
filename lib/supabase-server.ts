@@ -1,7 +1,8 @@
 import { createClient } from "@supabase/supabase-js";
+import { createServerClient as createSSRServerClient } from "@supabase/ssr";
+import type { NextRequest, NextResponse } from "next/server";
 
 // Simple anon client for server-side reads.
-// Auth is disabled — no cookies or session management needed.
 // `cache: "no-store"` prevents Next.js from caching Supabase fetch calls.
 function makeClient() {
   return createClient(
@@ -22,4 +23,31 @@ export function createServerClient() {
 
 export function createRouteClient() {
   return makeClient();
+}
+
+// Cookie-aware client for middleware — reads/writes session cookies so
+// Supabase Auth works across server components and API routes.
+export function createMiddlewareClient(
+  request: NextRequest,
+  response: NextResponse
+) {
+  return createSSRServerClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
+    {
+      cookies: {
+        getAll() {
+          return request.cookies.getAll();
+        },
+        setAll(cookiesToSet) {
+          cookiesToSet.forEach(({ name, value }) =>
+            request.cookies.set(name, value)
+          );
+          cookiesToSet.forEach(({ name, value, options }) =>
+            response.cookies.set(name, value, options)
+          );
+        },
+      },
+    }
+  );
 }

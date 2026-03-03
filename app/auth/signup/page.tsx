@@ -8,8 +8,9 @@ import { Button } from "@/components/ui/button";
 import { Input } from "@/components/ui/input";
 import { Label } from "@/components/ui/label";
 
-export default function LoginPage() {
+export default function SignupPage() {
   const router = useRouter();
+  const [fullName, setFullName] = useState("");
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
   const [loading, setLoading] = useState(false);
@@ -21,9 +22,12 @@ export default function LoginPage() {
     setError(null);
 
     const supabase = createClient();
-    const { error: authErr } = await supabase.auth.signInWithPassword({
+    const { error: authErr } = await supabase.auth.signUp({
       email,
       password,
+      options: {
+        data: { full_name: fullName },
+      },
     });
 
     if (authErr) {
@@ -32,23 +36,7 @@ export default function LoginPage() {
       return;
     }
 
-    // Check approval status
-    const { data: { user } } = await supabase.auth.getUser();
-    if (user) {
-      const { data: profile } = await supabase
-        .from("profiles")
-        .select("approved")
-        .eq("id", user.id)
-        .single();
-
-      if (!profile?.approved) {
-        router.push("/auth/pending");
-        return;
-      }
-    }
-
-    router.push("/dashboard");
-    router.refresh();
+    router.push("/auth/pending");
   };
 
   const fundName = process.env.NEXT_PUBLIC_FUND_NAME ?? "LP Dashboard";
@@ -59,13 +47,26 @@ export default function LoginPage() {
         <p className="font-mono text-[10px] font-medium uppercase tracking-[0.15em] text-muted-foreground">
           {fundName}
         </p>
-        <h1 className="text-lg font-medium text-foreground">LP Reporting</h1>
+        <h1 className="text-lg font-medium text-foreground">Request access</h1>
         <p className="text-sm text-muted-foreground">
-          Sign in to access the dashboard
+          Submit your details — an admin will approve your account.
         </p>
       </div>
 
       <form onSubmit={(e) => void handleSubmit(e)} className="space-y-4">
+        <div className="space-y-1.5">
+          <Label htmlFor="full-name">Full name</Label>
+          <Input
+            id="full-name"
+            type="text"
+            autoComplete="name"
+            placeholder="Jane Smith"
+            value={fullName}
+            onChange={(e) => setFullName(e.target.value)}
+            required
+            disabled={loading}
+          />
+        </div>
         <div className="space-y-1.5">
           <Label htmlFor="email">Email</Label>
           <Input
@@ -84,11 +85,12 @@ export default function LoginPage() {
           <Input
             id="password"
             type="password"
-            autoComplete="current-password"
+            autoComplete="new-password"
             placeholder="••••••••"
             value={password}
             onChange={(e) => setPassword(e.target.value)}
             required
+            minLength={8}
             disabled={loading}
           />
         </div>
@@ -96,14 +98,14 @@ export default function LoginPage() {
         {error && <p className="text-xs text-destructive">{error}</p>}
 
         <Button type="submit" className="w-full" disabled={loading}>
-          {loading ? "Signing in…" : "Sign in"}
+          {loading ? "Submitting…" : "Request access"}
         </Button>
       </form>
 
       <p className="text-[11px] text-center text-muted-foreground">
-        Don&apos;t have an account?{" "}
-        <Link href="/auth/signup" className="underline underline-offset-2">
-          Request access
+        Already have an account?{" "}
+        <Link href="/auth/login" className="underline underline-offset-2">
+          Sign in
         </Link>
       </p>
     </div>

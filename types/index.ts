@@ -77,6 +77,7 @@ export interface Profile {
   email: string;
   role: UserRole;
   full_name: string;
+  approved: boolean;
   created_at: string;         // ISO datetime string
 }
 
