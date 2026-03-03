@@ -80,7 +80,7 @@ async function runSync() {
 
   if (fetched === 0) {
     return NextResponse.json<ApiResponse<SyncResult>>({
-      data: { fetched: 0, inserted: 0, skipped: 0 },
+      data: { fetched: 0, inserted: 0, skipped: 0, enriched: 0 },
     });
   }
 
