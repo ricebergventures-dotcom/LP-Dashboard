@@ -106,6 +106,11 @@ export interface GeographyCount {
   count: number;
 }
 
+export interface MonthlyInbound {
+  month: string; // e.g. "Jan '25"
+  count: number;
+}
+
 /** Pre-aggregated snapshot used by the PDF export and any route that needs
  *  metrics + sector breakdown + stage breakdown in one call. */
 export interface AggregatedData {

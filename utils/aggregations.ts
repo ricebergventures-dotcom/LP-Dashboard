@@ -14,6 +14,7 @@ import type {
   StageCount,
   GeographyCount,
   AggregatedData,
+  MonthlyInbound,
 } from "@/types";
 
 export function computeMetrics(deals: Deal[]): DashboardMetrics {
@@ -199,6 +200,32 @@ export function buildSummaryGroups(deals: Deal[]): DealGroupSummary {
     stages: buildStageRecord(deals),
     geographies: buildGeographyRecord(deals),
   };
+}
+
+// ─── Monthly inbound trend ─────────────────────────────────────────────────────
+
+/** Returns deal counts grouped by calendar month for the last `months` months. */
+export function computeMonthlyInbound(deals: Deal[], months = 12): MonthlyInbound[] {
+  const now = new Date();
+  const result: MonthlyInbound[] = [];
+
+  for (let i = months - 1; i >= 0; i--) {
+    const year = now.getMonth() - i < 0
+      ? now.getFullYear() - 1
+      : now.getFullYear();
+    const month = ((now.getMonth() - i) % 12 + 12) % 12;
+    const label = new Date(year, month, 1).toLocaleDateString("en-US", {
+      month: "short",
+      year: "2-digit",
+    });
+    const count = deals.filter((d) => {
+      const added = parseISO(d.date_added);
+      return added.getFullYear() === year && added.getMonth() === month;
+    }).length;
+    result.push({ month: label, count });
+  }
+
+  return result;
 }
 
 // ─── Recent deals ──────────────────────────────────────────────────────────────

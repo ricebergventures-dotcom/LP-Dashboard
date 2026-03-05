@@ -13,7 +13,7 @@ import { Badge } from "@/components/ui/badge";
 const NAV_ITEMS = [
   { label: "Dashboard",     href: "/dashboard",              icon: LayoutDashboard },
   { label: "Transactions",  href: "/dashboard/transactions", icon: ArrowLeftRight   },
-  { label: "Portfolio",     href: "/dashboard/portfolio",    icon: Briefcase        },
+  { label: "Pipeline",      href: "/dashboard/portfolio",    icon: Briefcase        },
   { label: "Upload",        href: "/dashboard/upload",       icon: Upload, adminOnly: true },
   { label: "Users",         href: "/dashboard/admin",        icon: Users,  adminOnly: true },
   { label: "Settings",      href: "/dashboard/settings",     icon: Settings         },

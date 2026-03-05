@@ -9,8 +9,28 @@ import type { ApiResponse } from "@/types";
 export const dynamic = "force-dynamic";
 
 // Process 20 per call to stay within Vercel's function timeout.
-// Run the endpoint multiple times until remaining reaches 0.
+// The EnrichButton client loops until remaining reaches 0.
 const BATCH_LIMIT = 20;
+
+// Deals that count as "needs enrichment" — null/empty, placeholder values, or
+// old narrow sector labels that should be re-classified under the new broad categories.
+const NEEDS_ENRICHMENT_FILTER = [
+  "sector.is.null",
+  "sector.eq.",
+  "sector.eq.Other",
+  // Old narrow sectors — re-enrich under the new 6-category schema
+  "sector.eq.AI/ML",
+  "sector.eq.Fintech",
+  "sector.eq.Healthtech",
+  "sector.eq.Biotech",
+  "sector.eq.SaaS",
+  "sector.eq.Climate Tech",
+  "sector.eq.Crypto/Web3",
+  "geography.is.null",
+  "geography.eq.",
+  "geography.eq.Unknown",
+  "geography.eq.Global",
+].join(",");
 
 export interface EnrichResult {
   total: number;
@@ -23,8 +43,8 @@ export async function POST(request: Request) {
   const { searchParams } = new URL(request.url);
   const force = searchParams.get("force") === "true";
 
-  // Normal mode: only deals missing sector or geography.
-  // Force mode: also re-enrich deals with placeholder values ("Other", "Unknown", "Global").
+  // Normal mode: deals missing sector/geography or stuck with placeholder values.
+  // Force mode: re-enrich every deal regardless of current value.
   const { data: deals, error } = force
     ? await supabase
         .from("deals")
@@ -33,7 +53,7 @@ export async function POST(request: Request) {
     : await supabase
         .from("deals")
         .select("id, company_name")
-        .or("sector.is.null,sector.eq.,sector.eq.Other,geography.is.null,geography.eq.,geography.eq.Unknown")
+        .or(NEEDS_ENRICHMENT_FILTER)
         .limit(BATCH_LIMIT);
 
   if (error) {
@@ -64,11 +84,11 @@ export async function POST(request: Request) {
     else if (!firstUpdateError) firstUpdateError = updateError.message;
   }
 
-  // Count how many still need enrichment
+  // Count how many still need enrichment (same filter as batch selection)
   const { count } = await supabase
     .from("deals")
     .select("id", { count: "exact", head: true })
-    .or("sector.is.null,sector.eq.,geography.is.null,geography.eq.");
+    .or(NEEDS_ENRICHMENT_FILTER);
 
   return NextResponse.json({
     data: {

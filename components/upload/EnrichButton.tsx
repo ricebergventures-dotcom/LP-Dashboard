@@ -17,6 +17,8 @@ export function EnrichButton() {
   async function handleEnrich() {
     setState({ kind: "loading", enriched: 0, remaining: null });
     let totalEnriched = 0;
+    let prevRemaining: number | null = null;
+    let stuckBatches = 0;
 
     while (true) {
       let json: ApiResponse<EnrichResult>;
@@ -48,7 +50,19 @@ export function EnrichButton() {
         return;
       }
 
-      // Update progress and loop for the next batch
+      // Stop if remaining count hasn't decreased for 3 consecutive batches
+      // (some companies may be unclassifiable — don't loop forever)
+      if (prevRemaining !== null && remaining >= prevRemaining) {
+        stuckBatches++;
+        if (stuckBatches >= 3) {
+          setState({ kind: "success", totalEnriched });
+          return;
+        }
+      } else {
+        stuckBatches = 0;
+      }
+      prevRemaining = remaining;
+
       setState({ kind: "loading", enriched: totalEnriched, remaining });
     }
   }
