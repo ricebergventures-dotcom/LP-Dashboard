@@ -2,6 +2,7 @@
 
 import { useState } from "react";
 import { ArrowUpRight, MapPin, Calendar, ExternalLink } from "lucide-react";
+import { motion, AnimatePresence } from "framer-motion";
 
 interface Company {
   name: string;
@@ -254,21 +255,29 @@ export function PortfolioGrid() {
 
       {/* Company grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {filtered.map((company, i) => (
-          <div
-            key={company.name}
-            className="animate-fade-up"
-            style={{ animationDelay: `${i * 50}ms` }}
-          >
-            <CompanyCard company={company} />
-          </div>
-        ))}
+        <AnimatePresence mode="popLayout">
+          {filtered.map((company, i) => (
+            <motion.div
+              key={company.name}
+              layout
+              initial={{ opacity: 0, scale: 0.97 }}
+              animate={{ opacity: 1, scale: 1, transition: { duration: 0.22, delay: i * 0.04, ease: [0.16, 1, 0.3, 1] } }}
+              exit={{ opacity: 0, scale: 0.97, transition: { duration: 0.15 } }}
+            >
+              <CompanyCard company={company} />
+            </motion.div>
+          ))}
+        </AnimatePresence>
       </div>
 
       {filtered.length === 0 && (
-        <p className="text-sm text-muted-foreground text-center py-12">
+        <motion.p
+          initial={{ opacity: 0 }}
+          animate={{ opacity: 1 }}
+          className="text-sm text-muted-foreground text-center py-12"
+        >
           No companies in this sector.
-        </p>
+        </motion.p>
       )}
     </div>
   );

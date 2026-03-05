@@ -1,7 +1,11 @@
+"use client";
+
+import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatCount, formatPercent, formatCheckSize } from "@/utils/formatters";
+import { formatPercent, formatCheckSize } from "@/utils/formatters";
 import type { DashboardMetrics } from "@/types";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
+import { useCountUp } from "@/hooks/useCountUp";
 
 interface MetricsRowProps {
   metrics: DashboardMetrics;
@@ -18,12 +22,17 @@ interface StatCardProps {
   subClass?: string;
   trend?: "up" | "down" | "flat";
   accentColor?: string;
+  index: number;
 }
 
-function StatCard({ label, value, valueClass, sub, subClass, trend, accentColor }: StatCardProps) {
+function StatCard({ label, value, valueClass, sub, subClass, trend, accentColor, index }: StatCardProps) {
   return (
-    <div
-      className="bg-card border border-border p-5 space-y-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.07)] hover:border-border/80"
+    <motion.div
+      initial={{ opacity: 0, y: 16 }}
+      animate={{ opacity: 1, y: 0 }}
+      transition={{ duration: 0.45, delay: index * 0.07, ease: [0.16, 1, 0.3, 1] }}
+      whileHover={{ y: -2, transition: { duration: 0.15 } }}
+      className="bg-card border border-border p-5 space-y-2.5 cursor-default"
       style={accentColor ? { borderTopColor: accentColor, borderTopWidth: 2 } : undefined}
     >
       <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
@@ -44,7 +53,7 @@ function StatCard({ label, value, valueClass, sub, subClass, trend, accentColor 
           )}
         </div>
       )}
-    </div>
+    </motion.div>
   );
 }
 
@@ -54,24 +63,22 @@ export function MetricsRow({ metrics, totalDeals, sectorCount, geoCount }: Metri
   const wowDown = weekOverWeekChange < 0;
   const wowFlat = weekOverWeekChange === 0;
 
+  // Count-up animations staggered by card index
+  const animTotal      = useCountUp(totalDeals,     800,  0);
+  const animActive     = useCountUp(activePipeline, 800,  70);
+  const animMonth      = useCountUp(dealsThisMonth, 800, 140);
+  const animWeek       = useCountUp(dealsThisWeek,  800, 210);
+  const animSectors    = useCountUp(sectorCount,    800, 280);
+
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
+      <StatCard index={0} label="Total Pipeline"      value={String(animTotal)}   accentColor="#5CD3D3" />
+      <StatCard index={1} label="Active Deals"        value={String(animActive)} />
+      <StatCard index={2} label="Inbound This Month"  value={String(animMonth)} />
       <StatCard
-        label="Total Pipeline"
-        value={formatCount(totalDeals)}
-        accentColor="#5CD3D3"
-      />
-      <StatCard
-        label="Active Deals"
-        value={formatCount(activePipeline)}
-      />
-      <StatCard
-        label="Inbound This Month"
-        value={formatCount(dealsThisMonth)}
-      />
-      <StatCard
+        index={3}
         label="This Week"
-        value={formatCount(dealsThisWeek)}
+        value={String(animWeek)}
         valueClass={wowUp ? "text-emerald-500" : wowDown ? "text-red-400" : undefined}
         sub={
           wowFlat
@@ -81,14 +88,8 @@ export function MetricsRow({ metrics, totalDeals, sectorCount, geoCount }: Metri
         subClass={wowUp ? "text-emerald-500" : wowDown ? "text-red-400" : "text-muted-foreground"}
         trend={wowUp ? "up" : wowDown ? "down" : "flat"}
       />
-      <StatCard
-        label="Sectors Covered"
-        value={formatCount(sectorCount)}
-      />
-      <StatCard
-        label="Capital Deployed"
-        value={formatCheckSize(totalDeployed)}
-      />
+      <StatCard index={4} label="Sectors Covered"    value={String(animSectors)} />
+      <StatCard index={5} label="Capital Deployed"   value={formatCheckSize(totalDeployed)} />
     </div>
   );
 }

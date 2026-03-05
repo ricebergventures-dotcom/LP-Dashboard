@@ -8,6 +8,7 @@ import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
+import { motion } from "framer-motion";
 
 const NAV_ITEMS = [
   { label: "Pipeline",  href: "/dashboard",           icon: BarChart2  },
@@ -60,14 +61,21 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-[3px] transition-colors",
+                "relative flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-[3px] transition-colors",
                 active
-                  ? "bg-white/[0.08] text-[#5CD3D3] font-medium"
+                  ? "text-[#5CD3D3] font-medium"
                   : "text-white/35 hover:text-white/70 hover:bg-white/[0.04]"
               )}
             >
-              <item.icon className="h-4 w-4 shrink-0" />
-              {item.label}
+              {active && (
+                <motion.div
+                  layoutId="sidebar-active-bg"
+                  className="absolute inset-0 bg-white/[0.08] rounded-[3px]"
+                  transition={{ type: "spring", stiffness: 380, damping: 32 }}
+                />
+              )}
+              <item.icon className="relative h-4 w-4 shrink-0" />
+              <span className="relative">{item.label}</span>
             </Link>
           );
         })}
