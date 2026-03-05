@@ -25,8 +25,12 @@ export function WeeklySummaryPanel({ summary }: WeeklySummaryPanelProps) {
     try {
       const res = await fetch("/api/summary", { method: "POST" });
       if (!res.ok) {
-        const json = (await res.json()) as { error?: string };
-        throw new Error(json.error ?? "Failed to generate summary");
+        let errorMsg = `Server error (${res.status})`;
+        try {
+          const json = (await res.json()) as { error?: string };
+          if (json.error) errorMsg = json.error;
+        } catch { /* empty body — keep the status-code message */ }
+        throw new Error(errorMsg);
       }
       const json = (await res.json()) as { data: WeeklySummary };
       setCurrent(json.data);

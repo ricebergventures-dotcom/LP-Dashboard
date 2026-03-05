@@ -78,12 +78,21 @@ export async function POST() {
     `\nStage distribution:\n${stageLines || "  (none)"}`,
   ].join("\n");
 
-  const summaryText = await generateText({
-    systemPrompt: SUMMARY_SYSTEM_PROMPT,
-    userMessage,
-    temperature: SUMMARY_TEMPERATURE,
-    maxTokens: SUMMARY_MAX_TOKENS,
-  });
+  let summaryText: string;
+  try {
+    summaryText = await generateText({
+      systemPrompt: SUMMARY_SYSTEM_PROMPT,
+      userMessage,
+      temperature: SUMMARY_TEMPERATURE,
+      maxTokens: SUMMARY_MAX_TOKENS,
+    });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown Gemini error";
+    return NextResponse.json<ApiResponse<never>>(
+      { error: `AI generation failed: ${message}` },
+      { status: 502 }
+    );
+  }
 
   const { data: saved, error: saveErr } = await serviceSupabase
     .from("weekly_summaries")
