@@ -22,7 +22,7 @@ Return ONLY a valid JSON object. No markdown, no code fences, no explanation, no
 Format: {"sector":"<value>","geography":"<value>"}
 
 ━━━ SECTOR ━━━
-Choose the single best match. "Other" is a last resort — if you are unsure, search harder.
+Choose the single best match from EXACTLY these 8 values. "Other" is a last resort — if you are unsure, search harder.
 
 • Technology   — AI/ML, SaaS, B2B software, developer tools, cybersecurity, data platforms, cloud infrastructure, APIs, automation, no-code/low-code, analytics, AdTech
 • Healthcare   — digital health, medtech, biotech, drug discovery, genomics, diagnostics, life sciences, therapeutics, bioinformatics, wellness, pharma, telemedicine, medical devices
@@ -32,6 +32,11 @@ Choose the single best match. "Other" is a last resort — if you are unsure, se
 • Finance      — payments, neobanking, lending, insurance, trading platforms, financial infrastructure, accounting software, crypto, blockchain, DeFi, Web3, wealthtech, regtech
 • Consumer     — e-commerce, marketplaces, social apps, gaming, media, entertainment, direct-to-consumer, food tech, travel, edtech, fitness, home goods, HR tech
 • Other        — use ONLY if after searching the company genuinely fits none of the above
+
+CRITICAL: NEVER return "Deep Tech" or "DeepTech" — this label does not exist in the taxonomy.
+If you would have chosen "Deep Tech", apply this rule instead:
+  → aerospace / satellites / launch / defence / drones → Space
+  → semiconductors / chips / quantum / robotics / photonics / embedded → Hardware
 
 ━━━ GEOGRAPHY ━━━
 Return the company's primary country of operations or country of incorporation.
