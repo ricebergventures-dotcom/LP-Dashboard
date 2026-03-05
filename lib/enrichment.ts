@@ -26,7 +26,7 @@ Choose the single best match from EXACTLY these 8 values. "Other" is a last reso
 
 • Technology   — AI/ML, SaaS, B2B software, developer tools, cybersecurity, data platforms, cloud infrastructure, APIs, automation, no-code/low-code, analytics, AdTech
 • Healthcare   — digital health, medtech, biotech, drug discovery, genomics, diagnostics, life sciences, therapeutics, bioinformatics, wellness, pharma, telemedicine, medical devices
-• Space        — satellites, space infrastructure, orbital systems, launch vehicles, drones/UAVs, aerospace, earth observation, defence tech, hypersonic transport
+• Space        — satellites, space infrastructure, orbital systems, launch vehicles, drones/UAVs, aerospace, earth observation, defence tech, hypersonic transport, hyperloop
 • Climate      — clean energy, solar, wind, carbon capture, EVs, agritech, precision agriculture, sustainable materials, recycling, water tech, circular economy, energy storage
 • Hardware     — semiconductors, chips, quantum computing, robotics, advanced materials, photonics, IoT devices, embedded systems, computing architecture, physical security hardware
 • Finance      — payments, neobanking, lending, insurance, trading platforms, financial infrastructure, accounting software, crypto, blockchain, DeFi, Web3, wealthtech, regtech
@@ -35,8 +35,21 @@ Choose the single best match from EXACTLY these 8 values. "Other" is a last reso
 
 CRITICAL: NEVER return "Deep Tech" or "DeepTech" — this label does not exist in the taxonomy.
 If you would have chosen "Deep Tech", apply this rule instead:
-  → aerospace / satellites / launch / defence / drones → Space
+  → aerospace / satellites / launch / defence / drones / hyperloop → Space
   → semiconductors / chips / quantum / robotics / photonics / embedded → Hardware
+
+━━━ DISAMBIGUATION RULES ━━━
+When a company sits at the boundary of two sectors, use the PRIMARY output or application:
+• AI tool used by doctors / hospitals → Healthcare (the AI is the method, health is the product)
+• AI tool used by businesses generally → Technology
+• Hardware security device / HSM / TPM / PUF → Hardware (not Technology)
+• Software cybersecurity / zero-trust / SIEM → Technology (not Hardware)
+• Space-based earth observation for climate → Space (not Climate)
+• Clean-energy propulsion for rockets → Space (not Climate)
+• Biochar / soil carbon / agri carbon credits → Climate (not Hardware)
+• Computational pathology / digital pathology → Healthcare (not Technology)
+• Sleep monitoring device / diagnostic wearable → Healthcare (not Hardware)
+• Drug discovery software / bioinformatics → Healthcare (not Technology)
 
 ━━━ GEOGRAPHY ━━━
 Return the company's primary country of operations or country of incorporation.
@@ -70,7 +83,7 @@ export async function enrichCompany(companyName: string): Promise<EnrichmentResu
   const text = await generateText({
     systemPrompt: ENRICH_SYSTEM,
     userMessage: `Search Google for the startup "${companyName}" — find what they do, what industry they are in, and which country they are based in or incorporated in. Then return the JSON classification.`,
-    temperature: 0.1,
+    temperature: 0.2,
     maxTokens: 200,
     useSearch: true,
   });
@@ -96,10 +109,13 @@ function parseResult(json: { sector?: unknown; geography?: unknown }): Enrichmen
   const rawSector = typeof json.sector === "string" ? json.sector.trim() : "";
   const rawGeo    = typeof json.geography === "string" ? json.geography.trim() : "";
 
-  // Accept valid sector; remap legacy / too-broad labels
+  // Accept valid sector; remap legacy / too-broad labels.
+  // Normalise to catch all capitalisation / spacing variants Gemini might produce
+  // (e.g. "deep tech", "DEEP TECH", "Deep-Tech", "deeptech").
+  const normalised = rawSector.toLowerCase().replace(/[\s_-]+/g, "");
   let sector: string;
-  if (rawSector === "Deep Tech" || rawSector === "DeepTech") {
-    sector = "Hardware"; // conservative fallback — will be re-enriched on next run if wrong
+  if (normalised === "deeptech") {
+    sector = "Hardware"; // conservative fallback; force re-enrich will correct if wrong
   } else if (VALID_SECTORS.has(rawSector)) {
     sector = rawSector;
   } else {
