@@ -40,7 +40,7 @@ export function Sidebar() {
           alt={fundName}
           width={116}
           height={32}
-          className="object-contain brightness-0 invert opacity-85"
+          className="object-contain"
           priority
         />
         <p className="mt-2 text-[9px] text-white/20 tracking-[0.18em] uppercase font-mono">

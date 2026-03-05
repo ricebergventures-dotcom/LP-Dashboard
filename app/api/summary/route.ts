@@ -34,6 +34,14 @@ export async function GET() {
 }
 
 export async function POST() {
+  if (!process.env.SUPABASE_SERVICE_ROLE_KEY) {
+    return NextResponse.json<ApiResponse<never>>(
+      { error: "SUPABASE_SERVICE_ROLE_KEY is not configured — add it in Vercel → Settings → Environment Variables." },
+      { status: 500 }
+    );
+  }
+
+  try {
   const supabase = createRouteClient();
   const serviceSupabase = createServiceClient(); // bypasses RLS for the insert
 
@@ -117,4 +125,11 @@ export async function POST() {
   return NextResponse.json<ApiResponse<WeeklySummary>>({
     data: saved as WeeklySummary,
   });
+  } catch (err) {
+    const message = err instanceof Error ? err.message : "Unknown server error";
+    return NextResponse.json<ApiResponse<never>>(
+      { error: message },
+      { status: 500 }
+    );
+  }
 }
