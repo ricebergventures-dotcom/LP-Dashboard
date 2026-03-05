@@ -68,6 +68,8 @@ export function StageDonutChart({ data }: StageDonutChartProps) {
                   fontSize: 12,
                   color: "hsl(var(--foreground))",
                 }}
+                itemStyle={{ color: "hsl(var(--foreground))" }}
+                labelStyle={{ color: "hsl(var(--muted-foreground))" }}
                 formatter={(value: number, name: string) => [value, name]}
               />
             </PieChart>

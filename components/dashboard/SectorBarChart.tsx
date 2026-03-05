@@ -68,7 +68,7 @@ export function SectorBarChart({ data }: SectorBarChartProps) {
           >
             <XAxis
               type="number"
-              tick={{ fontSize: 11, fontFamily: "'DM Mono', monospace" }}
+              tick={{ fontSize: 11, fontFamily: "'DM Mono', monospace", fill: "hsl(var(--muted-foreground))" }}
               axisLine={false}
               tickLine={false}
               allowDecimals={false}
@@ -78,7 +78,7 @@ export function SectorBarChart({ data }: SectorBarChartProps) {
               dataKey="sector"
               type="category"
               width={112}
-              tick={{ fontSize: 11 }}
+              tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
               axisLine={false}
               tickLine={false}
             />
@@ -91,6 +91,8 @@ export function SectorBarChart({ data }: SectorBarChartProps) {
                 fontSize: 12,
                 color: "hsl(var(--foreground))",
               }}
+              itemStyle={{ color: "hsl(var(--foreground))" }}
+              labelStyle={{ color: "hsl(var(--muted-foreground))" }}
               formatter={(value: number) => [value, "Deals"]}
             />
             <Bar dataKey="count" radius={[0, 2, 2, 0]} maxBarSize={20}>

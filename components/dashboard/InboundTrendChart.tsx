@@ -46,12 +46,12 @@ export function InboundTrendChart({ data }: InboundTrendChartProps) {
           <BarChart data={data} margin={{ top: 4, right: 8, left: -20, bottom: 0 }}>
             <XAxis
               dataKey="month"
-              tick={{ fontSize: 10 }}
+              tick={{ fontSize: 10, fill: "hsl(var(--muted-foreground))" }}
               axisLine={false}
               tickLine={false}
             />
             <YAxis
-              tick={{ fontSize: 11, fontFamily: "'DM Mono', monospace" }}
+              tick={{ fontSize: 11, fontFamily: "'DM Mono', monospace", fill: "hsl(var(--muted-foreground))" }}
               axisLine={false}
               tickLine={false}
               allowDecimals={false}
@@ -66,6 +66,8 @@ export function InboundTrendChart({ data }: InboundTrendChartProps) {
                 fontSize: 12,
                 color: "hsl(var(--foreground))",
               }}
+              itemStyle={{ color: "hsl(var(--foreground))" }}
+              labelStyle={{ color: "hsl(var(--muted-foreground))" }}
               formatter={(value: number) => [value, "Deals"]}
             />
             <Bar dataKey="count" radius={[2, 2, 0, 0]} maxBarSize={40}>
