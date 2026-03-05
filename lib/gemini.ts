@@ -17,34 +17,43 @@ export async function generateText({
   userMessage,
   temperature = 0.3,
   maxTokens = 600,
+  useSearch = false,
 }: {
   systemPrompt: string;
   userMessage: string;
   temperature?: number;
   maxTokens?: number;
+  /** Enable Gemini Google Search grounding for up-to-date information. */
+  useSearch?: boolean;
 }): Promise<string> {
   const key = getApiKey();
+
+  const body: Record<string, unknown> = {
+    contents: [{ role: "user", parts: [{ text: userMessage }] }],
+    systemInstruction: { parts: [{ text: systemPrompt }] },
+    generationConfig: {
+      temperature,
+      maxOutputTokens: maxTokens,
+    },
+  };
+
+  if (useSearch) {
+    body.tools = [{ google_search: {} }];
+  }
 
   const res = await fetch(
     `${BASE}/${GEMINI_MODEL}:generateContent?key=${key}`,
     {
       method: "POST",
       headers: { "Content-Type": "application/json" },
-      body: JSON.stringify({
-        contents: [{ role: "user", parts: [{ text: userMessage }] }],
-        systemInstruction: { parts: [{ text: systemPrompt }] },
-        generationConfig: {
-          temperature,
-          maxOutputTokens: maxTokens,
-        },
-      }),
+      body: JSON.stringify(body),
       cache: "no-store",
     }
   );
 
   if (!res.ok) {
-    const body = await res.text().catch(() => "(no body)");
-    throw new Error(`Gemini ${res.status}: ${body}`);
+    const text = await res.text().catch(() => "(no body)");
+    throw new Error(`Gemini ${res.status}: ${text}`);
   }
 
   const json = (await res.json()) as {

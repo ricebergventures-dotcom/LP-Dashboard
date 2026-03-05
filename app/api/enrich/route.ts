@@ -8,9 +8,10 @@ import type { ApiResponse } from "@/types";
 
 export const dynamic = "force-dynamic";
 
-// Process 20 per call to stay within Vercel's function timeout.
-// The EnrichButton client loops until remaining reaches 0.
-const BATCH_LIMIT = 20;
+// Process 10 per call — search-grounded Gemini calls take 3-5 s each,
+// so 10 × concurrency-3 keeps each API route call well under 60 s.
+// The EnrichButton client loops automatically until remaining reaches 0.
+const BATCH_LIMIT = 10;
 
 // Deals that count as "needs enrichment" — null/empty, placeholder values, or
 // old narrow sector labels that should be re-classified under the new broad categories.
@@ -70,7 +71,7 @@ export async function POST(request: Request) {
     });
   }
 
-  const enrichmentMap = await enrichBatch(deals!, 5);
+  const enrichmentMap = await enrichBatch(deals!, 3);
   const geminiReturned = enrichmentMap.size;
 
   let enriched = 0;
