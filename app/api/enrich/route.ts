@@ -43,20 +43,24 @@ export interface EnrichResult {
   total: number;
   enriched: number;
   remaining: number;
+  nextOffset?: number;
 }
 
 export async function POST(request: Request) {
   const supabase = createRouteClient();
   const { searchParams } = new URL(request.url);
   const force = searchParams.get("force") === "true";
+  const offset = Math.max(0, parseInt(searchParams.get("offset") ?? "0", 10));
 
   // Normal mode: deals missing sector/geography or stuck with placeholder values.
-  // Force mode: re-enrich every deal regardless of current value.
+  // Force mode: re-enrich every deal in offset-paginated batches so we don't
+  //   keep fetching the same first N rows on every call.
   const { data: deals, error } = force
     ? await supabase
         .from("deals")
         .select("id, company_name")
-        .limit(BATCH_LIMIT)
+        .order("id")
+        .range(offset, offset + BATCH_LIMIT - 1)
     : await supabase
         .from("deals")
         .select("id, company_name")
@@ -91,18 +95,28 @@ export async function POST(request: Request) {
     else if (!firstUpdateError) firstUpdateError = updateError.message;
   }
 
-  // Count how many still need enrichment (same filter as batch selection)
-  const { count } = await supabase
-    .from("deals")
-    .select("id", { count: "exact", head: true })
-    .or(NEEDS_ENRICHMENT_FILTER);
+  // Remaining: in force mode count by offset; in normal mode use the filter.
+  let remaining: number;
+  if (force) {
+    const { count: totalCount } = await supabase
+      .from("deals")
+      .select("id", { count: "exact", head: true });
+    remaining = Math.max(0, (totalCount ?? 0) - offset - total);
+  } else {
+    const { count } = await supabase
+      .from("deals")
+      .select("id", { count: "exact", head: true })
+      .or(NEEDS_ENRICHMENT_FILTER);
+    remaining = count ?? 0;
+  }
 
   return NextResponse.json({
     data: {
       total,
       geminiReturned,
       enriched,
-      remaining: count ?? 0,
+      remaining,
+      nextOffset: force ? offset + total : undefined,
       ...(firstUpdateError ? { firstUpdateError } : {}),
     },
   });

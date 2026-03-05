@@ -23,11 +23,16 @@ export function EnrichButton({ force = false }: EnrichButtonProps) {
     let totalEnriched = 0;
     let prevRemaining: number | null = null;
     let stuckBatches = 0;
+    let offset = 0;
 
     while (true) {
       let json: ApiResponse<EnrichResult>;
       try {
-        const url = force ? "/api/enrich?force=true" : "/api/enrich";
+        // Force mode uses offset pagination so each batch advances through all
+        // deals rather than re-fetching the same first N rows every time.
+        const url = force
+          ? `/api/enrich?force=true&offset=${offset}`
+          : "/api/enrich";
         const res = await fetch(url, { method: "POST" });
         json = (await res.json()) as ApiResponse<EnrichResult>;
         if (!res.ok || json.error || !json.data) {
@@ -47,8 +52,13 @@ export function EnrichButton({ force = false }: EnrichButtonProps) {
         return;
       }
 
-      const { enriched, remaining } = json.data;
+      const { enriched, remaining, nextOffset } = json.data;
       totalEnriched += enriched;
+
+      // In force mode advance the offset for the next batch.
+      if (force && nextOffset !== undefined) {
+        offset = nextOffset;
+      }
 
       if (remaining === 0) {
         setState({ kind: "success", totalEnriched });
