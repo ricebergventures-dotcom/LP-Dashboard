@@ -15,10 +15,14 @@ const BATCH_LIMIT = 10;
 
 // Deals that need enrichment — null/empty, placeholder values, retired sector
 // names, or the old "Deep Tech" umbrella that should now be Space or Hardware.
+//
+// NOTE: "Other" and "Unknown" are intentionally NOT included here.
+// They are valid final states — Gemini searched and genuinely couldn't classify
+// the deal. Including them causes an infinite loop: every deal enriched to
+// Other/Unknown gets re-queued, enriched again to Other/Unknown, forever.
 const NEEDS_ENRICHMENT_FILTER = [
   "sector.is.null",
   "sector.eq.",
-  "sector.eq.Other",
   // Retired broad label — split into Space / Hardware
   "sector.eq.Deep Tech",
   // Legacy narrow sectors from earlier schema
@@ -31,7 +35,7 @@ const NEEDS_ENRICHMENT_FILTER = [
   "sector.eq.Crypto/Web3",
   "geography.is.null",
   "geography.eq.",
-  "geography.eq.Unknown",
+  // "Global" is a bad placeholder our prompt bans — re-enrich these
   "geography.eq.Global",
 ].join(",");
 
