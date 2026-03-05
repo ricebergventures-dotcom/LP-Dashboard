@@ -27,7 +27,7 @@ const SECTOR_COLORS: Record<string, string> = {
 const FALLBACK_PALETTE = ["#5CD3D3", "#A78BFA", "#60A5FA", "#FBBF24", "#34D399", "#FB923C", "#94A3B8"];
 
 function getSectorColor(sector: string, index: number): string {
-  return SECTOR_COLORS[sector] ?? FALLBACK_PALETTE[index % FALLBACK_PALETTE.length];
+  return SECTOR_COLORS[sector] ?? FALLBACK_PALETTE[index % FALLBACK_PALETTE.length] ?? "#5CD3D3";
 }
 
 interface SectorBarChartProps {
