@@ -62,8 +62,8 @@ export function StageDonutChart({ data }: StageDonutChartProps) {
               </Pie>
               <Tooltip
                 contentStyle={{
-                  background: "#ffffff",
-                  border: "1px solid #E5E5E5",
+                  background: "hsl(var(--card))",
+                  border: "1px solid hsl(var(--border))",
                   borderRadius: 2,
                   fontSize: 12,
                 }}

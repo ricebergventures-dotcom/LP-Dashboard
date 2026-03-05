@@ -63,10 +63,10 @@ export function GeographyBarChart({ data }: GeographyBarChartProps) {
               tickLine={false}
             />
             <Tooltip
-              cursor={{ fill: "#FAFAFA" }}
+              cursor={false}
               contentStyle={{
-                background: "#ffffff",
-                border: "1px solid #E5E5E5",
+                background: "hsl(var(--card))",
+                border: "1px solid hsl(var(--border))",
                 borderRadius: 2,
                 fontSize: 12,
               }}

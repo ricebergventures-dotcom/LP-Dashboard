@@ -86,18 +86,10 @@ async function PipelineContent() {
           <GeographyBarChart data={geographies} />
 
           {/* AI Weekly Intelligence */}
-          <WeeklySummaryPanel summary={summary} isAdmin={isAdmin} />
+          <WeeklySummaryPanel summary={summary} />
 
           {/* Recent deals */}
-          <div>
-            <div className="flex items-center justify-between mb-3">
-              <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
-                Recent Deals
-              </p>
-              <span className="text-[11px] text-muted-foreground/60">{deals.length} total</span>
-            </div>
-            <TransactionsTable deals={recentDeals} />
-          </div>
+          <TransactionsTable deals={recentDeals} />
 
         </div>
       </div>

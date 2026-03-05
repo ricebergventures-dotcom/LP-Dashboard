@@ -74,7 +74,7 @@ export function EnrichButton() {
       <button
         onClick={handleEnrich}
         disabled={isLoading}
-        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-border bg-background hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-border bg-background transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Sparkles className={`h-4 w-4 ${isLoading ? "animate-pulse" : ""}`} />
         {isLoading ? "Enriching…" : "Enrich all companies"}

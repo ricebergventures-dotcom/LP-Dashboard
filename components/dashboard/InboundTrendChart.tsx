@@ -58,10 +58,10 @@ export function InboundTrendChart({ data }: InboundTrendChartProps) {
               tickCount={4}
             />
             <Tooltip
-              cursor={{ fill: "#F5F5F5" }}
+              cursor={false}
               contentStyle={{
-                background: "#ffffff",
-                border: "1px solid #E5E5E5",
+                background: "hsl(var(--card))",
+                border: "1px solid hsl(var(--border))",
                 borderRadius: 2,
                 fontSize: 12,
               }}

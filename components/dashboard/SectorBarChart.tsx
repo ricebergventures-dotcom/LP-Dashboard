@@ -79,7 +79,7 @@ export function SectorBarChart({ data }: SectorBarChartProps) {
               tickLine={false}
             />
             <Tooltip
-              cursor={{ fill: "hsl(var(--muted))" }}
+              cursor={false}
               contentStyle={{
                 background: "hsl(var(--card))",
                 border: "1px solid hsl(var(--border))",

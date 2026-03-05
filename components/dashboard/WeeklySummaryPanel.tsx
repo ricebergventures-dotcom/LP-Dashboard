@@ -6,14 +6,15 @@ import { Button } from "@/components/ui/button";
 import { Skeleton } from "@/components/ui/skeleton";
 import { formatDateTime } from "@/utils/formatters";
 import { RefreshCw, Sparkles } from "lucide-react";
+import { useAuth } from "@/hooks/useAuth";
 import type { WeeklySummary } from "@/types";
 
 interface WeeklySummaryPanelProps {
   summary: WeeklySummary | null;
-  isAdmin: boolean;
 }
 
-export function WeeklySummaryPanel({ summary, isAdmin }: WeeklySummaryPanelProps) {
+export function WeeklySummaryPanel({ summary }: WeeklySummaryPanelProps) {
+  const { isAdmin } = useAuth();
   const [current, setCurrent] = useState<WeeklySummary | null>(summary);
   const [generating, setGenerating] = useState(false);
   const [error, setError] = useState<string | null>(null);

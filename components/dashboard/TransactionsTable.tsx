@@ -54,7 +54,7 @@ export function TransactionsTable({ deals }: TransactionsTableProps) {
                 {deals.map((deal) => (
                   <TableRow
                     key={deal.id}
-                    className="cursor-pointer hover:bg-muted/50"
+                    className="cursor-pointer"
                     onClick={() => setSelectedCompany(deal.company_name)}
                   >
                     <TableCell className="font-medium text-foreground">

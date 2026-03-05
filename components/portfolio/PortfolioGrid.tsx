@@ -122,19 +122,6 @@ const COMPANIES: Company[] = [
     highlight: "First space startup from Kyrgyzstan",
   },
   {
-    name: "Kicksky",
-    tagline: "The global space startup accelerator",
-    sector: "Deep Tech",
-    stage: "Pre-Seed",
-    country: "Global",
-    backedAt: "2023",
-    description:
-      "Space startup accelerator and venture studio co-founded by Riceberg Ventures to identify and back the next generation of breakthrough space founders worldwide.",
-    tags: ["Space", "Accelerator", "Deep Tech", "Venture Studio"],
-    website: "https://kicksky.space",
-    highlight: "Portfolio of 12+ space startups across 8 countries",
-  },
-  {
     name: "Keyron",
     tagline: "Tamper-proof hardware authentication",
     sector: "Technology",

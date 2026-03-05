@@ -41,7 +41,7 @@ export function DecileSyncButton() {
       <button
         onClick={handleSync}
         disabled={isLoading}
-        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-border bg-background hover:bg-muted transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
+        className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-border bg-background transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <RefreshCw className={`h-4 w-4 ${isLoading ? "animate-spin" : ""}`} />
         {isLoading ? "Syncing…" : "Sync from Decile Hub"}
@@ -49,11 +49,11 @@ export function DecileSyncButton() {
 
       {state.kind === "success" && (
         <p className="text-sm text-muted-foreground">
-          Sync complete —{" "}
-          <span className="text-foreground font-medium">{state.result.inserted}</span> new deal
-          {state.result.inserted !== 1 ? "s" : ""} added,{" "}
-          <span className="text-foreground font-medium">{state.result.skipped}</span> skipped
-          {" "}(already imported), {state.result.fetched} fetched total.
+          Sync complete — {state.result.fetched} fetched,{" "}
+          <span className="text-foreground font-medium">{state.result.inserted}</span> new
+          {state.result.inserted !== 1 ? " deals" : " deal"} added,{" "}
+          <span className="text-foreground font-medium">{state.result.updated}</span> stage
+          {state.result.updated !== 1 ? " updates" : " update"} applied.
         </p>
       )}
 

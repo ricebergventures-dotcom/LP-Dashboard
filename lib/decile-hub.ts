@@ -26,10 +26,13 @@ function getPipelineId(): string {
 
 // ─── Types ─────────────────────────────────────────────────────────────────────
 
-/** Shape of a single pipeline prospect returned by the Decile Hub API. */
+/** Shape of a single pipeline prospect returned by the Decile Hub API.
+ *  `name` is the linked Organization name embedded by Decile Hub (present
+ *  when prospectable_type = "Organization").
+ */
 export interface DecileHubProspect {
   id: number;
-  name: string;                  // company name
+  name: string;                  // company / org name
   created_at: string;            // ISO datetime
   updated_at: string;
   stage: {
@@ -43,6 +46,7 @@ export interface DecileHubProspect {
   email: string | null;
   phone: string | null;
   assigned_name?: string;
+  tag_list?: string[];           // user-defined tags (can hint at sector)
 }
 
 /** Paginated list response from Decile Hub. */
@@ -70,21 +74,19 @@ export class DecileHubError extends Error {
 // ─── Fetch ─────────────────────────────────────────────────────────────────────
 
 /**
- * Fetches all deal prospects from the Decile Hub pipeline.
- *
- * @param since - If provided, only prospects created_after this date are returned.
+ * Fetches ALL deal prospects from the Decile Hub pipeline (all pages).
+ * No date filtering — we always do a full sync and rely on upsert deduplication
+ * so that stage/status changes in Decile Hub are reflected in the DB.
  *
  * Pagination: follows `pagination.total_pages`, requesting page=0…N-1.
  */
-export async function fetchDealsFromDecileHub(
-  since?: Date
-): Promise<DecileHubProspect[]> {
+export async function fetchDealsFromDecileHub(): Promise<DecileHubProspect[]> {
   const all: DecileHubProspect[] = [];
   let page = 0;
   let totalPages = 1;
 
   while (page < totalPages) {
-    const url = buildUrl(page, since);
+    const url = buildUrl(page);
     const batch = await fetchPage(url);
 
     totalPages = batch.pagination.total_pages;
@@ -95,16 +97,13 @@ export async function fetchDealsFromDecileHub(
   return all;
 }
 
-function buildUrl(page: number, since?: Date): string {
+function buildUrl(page: number): string {
   const params = new URLSearchParams({
     pipeline_id: getPipelineId(),
     page: String(page),
     order_by: "created_at",
     order_direction: "desc",
   });
-  if (since) {
-    params.set("created_after", since.toISOString());
-  }
   return `${getBaseUrl()}/api/v1/pipeline_prospects?${params.toString()}`;
 }
 
@@ -190,8 +189,8 @@ function deriveStatus(stageName: string): DealStatus {
  *
  * Note: Decile Hub pipeline stages represent workflow steps (e.g. "Added",
  * "Stealth Startups"), not funding rounds. We store the raw stage name and
- * derive status from it. Sector and geography are not available in the
- * pipeline_prospects endpoint and default to empty string.
+ * derive status from it. Sector and geography are not available from the
+ * pipeline_prospects endpoint — they default to "" and are enriched via Gemini.
  */
 export function mapDecileHubDeal(
   raw: DecileHubProspect
