@@ -13,13 +13,15 @@ export const dynamic = "force-dynamic";
 // The EnrichButton client loops automatically until remaining reaches 0.
 const BATCH_LIMIT = 10;
 
-// Deals that count as "needs enrichment" — null/empty, placeholder values, or
-// old narrow sector labels that should be re-classified under the new broad categories.
+// Deals that need enrichment — null/empty, placeholder values, retired sector
+// names, or the old "Deep Tech" umbrella that should now be Space or Hardware.
 const NEEDS_ENRICHMENT_FILTER = [
   "sector.is.null",
   "sector.eq.",
   "sector.eq.Other",
-  // Old narrow sectors — re-enrich under the new 6-category schema
+  // Retired broad label — split into Space / Hardware
+  "sector.eq.Deep Tech",
+  // Legacy narrow sectors from earlier schema
   "sector.eq.AI/ML",
   "sector.eq.Fintech",
   "sector.eq.Healthtech",

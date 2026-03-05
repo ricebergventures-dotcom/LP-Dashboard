@@ -14,17 +14,21 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import type { SectorCount } from "@/types";
 
-// Distinct color per sector — falls back to palette by index
+// Distinct color per sector.
+// "Deep Tech" is retired — old deals remapped to Hardware on re-enrichment.
 const SECTOR_COLORS: Record<string, string> = {
-  Technology:   "#5CD3D3",
-  Healthcare:   "#A78BFA",
-  Finance:      "#60A5FA",
-  "Deep Tech":  "#FBBF24",
-  Climate:      "#34D399",
-  Consumer:     "#FB923C",
-  Other:        "#94A3B8",
+  Technology:  "#5CD3D3",
+  Healthcare:  "#A78BFA",
+  Space:       "#818CF8",
+  Climate:     "#34D399",
+  Hardware:    "#FBBF24",
+  Finance:     "#60A5FA",
+  Consumer:    "#FB923C",
+  // Legacy alias kept so old DB values still render with a color
+  "Deep Tech": "#FBBF24",
+  Other:       "#94A3B8",
 };
-const FALLBACK_PALETTE = ["#5CD3D3", "#A78BFA", "#60A5FA", "#FBBF24", "#34D399", "#FB923C", "#94A3B8"];
+const FALLBACK_PALETTE = ["#5CD3D3", "#A78BFA", "#818CF8", "#34D399", "#FBBF24", "#60A5FA", "#FB923C", "#94A3B8"];
 
 function getSectorColor(sector: string, index: number): string {
   return SECTOR_COLORS[sector] ?? FALLBACK_PALETTE[index % FALLBACK_PALETTE.length] ?? "#5CD3D3";
