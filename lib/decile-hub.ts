@@ -172,7 +172,15 @@ async function safeText(response: Response): Promise<string> {
  */
 function deriveStatus(stageName: string): DealStatus {
   const lower = stageName.toLowerCase();
-  if (lower.includes("pass") || lower.includes("out of thesis") || lower.includes("declined")) {
+  if (
+    lower.includes("pass") ||
+    lower.includes("out of thesis") ||
+    lower.includes("declined") ||
+    lower.includes("failed") ||
+    lower.includes("no response") ||
+    lower.includes("unresponsive") ||
+    lower.includes("missed opportunity")
+  ) {
     return "passed";
   }
   if (lower.includes("diligence")) {
@@ -205,5 +213,6 @@ export function mapDecileHubDeal(
     notes: null,
     check_size: null,
     date_added: raw.created_at.slice(0, 10),
+    decile_hub_id: raw.id,      // used as upsert key for 1:1 prospect tracking
   };
 }

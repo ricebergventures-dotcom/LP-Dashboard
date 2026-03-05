@@ -32,7 +32,15 @@ export function computeMetrics(deals: Deal[]): DashboardMetrics {
   let totalDeployed = 0;
 
   for (const deal of deals) {
+    if (deal.check_size !== null) {
+      totalDeployed += deal.check_size;
+    }
+    if (deal.status === "active") {
+      activePipeline++;
+    }
+    if (!deal.date_added) continue; // skip deals with no date for time-based counts
     const date = parseISO(deal.date_added);
+    if (isNaN(date.getTime())) continue; // skip invalid dates
 
     if (isWithinInterval(date, { start: weekStart, end: weekEnd })) {
       dealsThisWeek++;
@@ -42,12 +50,6 @@ export function computeMetrics(deals: Deal[]): DashboardMetrics {
     }
     if (date >= monthStart) {
       dealsThisMonth++;
-    }
-    if (deal.status === "active") {
-      activePipeline++;
-    }
-    if (deal.check_size !== null) {
-      totalDeployed += deal.check_size;
     }
   }
 
@@ -219,7 +221,9 @@ export function computeMonthlyInbound(deals: Deal[], months = 12): MonthlyInboun
       year: "2-digit",
     });
     const count = deals.filter((d) => {
+      if (!d.date_added) return false;
       const added = parseISO(d.date_added);
+      if (isNaN(added.getTime())) return false;
       return added.getFullYear() === year && added.getMonth() === month;
     }).length;
     result.push({ month: label, count });

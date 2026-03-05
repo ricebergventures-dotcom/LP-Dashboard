@@ -2,14 +2,13 @@
 // GET  /api/sync  — Vercel Cron trigger (requires Authorization: Bearer <CRON_SECRET>)
 //
 // Always fetches the complete prospect list from Decile Hub and upserts into
-// the deals table. On conflict (company_name + date_added):
+// the deals table. On conflict (decile_hub_id):
 //   - stage and status are updated to reflect any Decile Hub changes
 //   - sector and geography are preserved if already enriched
 //
 // Prerequisite DB migration (run once in Supabase SQL editor):
-//   ALTER TABLE deals
-//     ADD CONSTRAINT deals_company_date_unique
-//     UNIQUE (company_name, date_added);
+//   ALTER TABLE deals ADD COLUMN IF NOT EXISTS decile_hub_id integer;
+//   ALTER TABLE deals ADD CONSTRAINT deals_decile_hub_id_unique UNIQUE (decile_hub_id);
 
 import { NextResponse } from "next/server";
 import { createRouteClient } from "@/lib/supabase-server";
@@ -48,19 +47,17 @@ async function runSync() {
   const supabase = createRouteClient();
 
   // ── Fetch existing deals to preserve enriched sector / geography ──────────
-  // We do this before the Decile Hub fetch so we can merge enrichment data
-  // into the upsert payload — preventing sector/geography from being blanked out.
   const { data: existingDeals } = await supabase
     .from("deals")
-    .select("company_name, date_added, sector, geography");
+    .select("company_name, date_added, decile_hub_id, sector, geography");
 
-  // Map: "company_name|date_added" → { sector, geography }
-  const existingMap = new Map<string, { sector: string; geography: string }>();
+  // Index by Decile Hub prospect ID (primary) and by name|date (legacy fallback)
+  const existingByHubId = new Map<number, { sector: string; geography: string }>();
+  const existingByKey = new Map<string, { sector: string; geography: string }>();
   for (const deal of existingDeals ?? []) {
-    existingMap.set(`${deal.company_name}|${deal.date_added}`, {
-      sector: deal.sector ?? "",
-      geography: deal.geography ?? "",
-    });
+    const enrichment = { sector: deal.sector ?? "", geography: deal.geography ?? "" };
+    if (deal.decile_hub_id) existingByHubId.set(deal.decile_hub_id as number, enrichment);
+    existingByKey.set(`${deal.company_name}|${deal.date_added}`, enrichment);
   }
 
   // ── Fetch all prospects from Decile Hub (full sync, no date filter) ───────
@@ -70,10 +67,7 @@ async function runSync() {
   } catch (err) {
     if (err instanceof DecileHubError) {
       const status = err.status === 401 ? 401 : err.status === 429 ? 429 : 502;
-      return NextResponse.json<ApiResponse<never>>(
-        { error: err.message },
-        { status }
-      );
+      return NextResponse.json<ApiResponse<never>>({ error: err.message }, { status });
     }
     const message = err instanceof Error ? err.message : "Unknown error";
     return NextResponse.json<ApiResponse<never>>(
@@ -93,39 +87,39 @@ async function runSync() {
   // ── Map + merge existing enrichment ──────────────────────────────────────
   const mapped = rawDeals.map((raw) => {
     const deal = mapDecileHubDeal(raw);
-    const key = `${deal.company_name}|${deal.date_added}`;
-    const existing = existingMap.get(key);
+    // Look up by Decile Hub ID first; fall back to name|date for legacy rows
+    const existing =
+      existingByHubId.get(raw.id) ??
+      existingByKey.get(`${deal.company_name}|${deal.date_added}`);
     return {
       ...deal,
-      // Preserve already-enriched sector/geography rather than blanking them out
       sector: existing?.sector || deal.sector,
       geography: existing?.geography || deal.geography,
     };
   });
 
-  // Track which rows are genuinely new (not already in the DB)
-  const newKeys = new Set(
+  // Track which rows are genuinely new (no existing Decile Hub ID match)
+  const newHubIds = new Set(
     mapped
-      .filter((d) => !existingMap.has(`${d.company_name}|${d.date_added}`))
-      .map((d) => `${d.company_name}|${d.date_added}`)
+      .filter((d) => d.decile_hub_id !== null && !existingByHubId.has(d.decile_hub_id!))
+      .map((d) => d.decile_hub_id!)
   );
 
-  // ── Upsert in chunks ──────────────────────────────────────────────────────
-  // ignoreDuplicates: false → stage + status are updated for existing rows
+  // ── Upsert in chunks on decile_hub_id ────────────────────────────────────
   const chunks = chunkArray(mapped, CHUNK_SIZE);
   let inserted = 0;
   let updated = 0;
   let firstError: string | null = null;
-  const upsertedRows: { id: string; company_name: string; date_added: string; sector: string }[] = [];
+  const upsertedRows: { id: string; company_name: string; date_added: string; decile_hub_id: number | null; sector: string }[] = [];
 
   for (const chunk of chunks) {
     const { data, error } = await supabase
       .from("deals")
       .upsert(chunk, {
-        onConflict: "company_name,date_added",
+        onConflict: "decile_hub_id",
         ignoreDuplicates: false,
       })
-      .select("id, company_name, date_added, sector");
+      .select("id, company_name, date_added, decile_hub_id, sector");
 
     if (error) {
       console.error("[sync] Supabase upsert error:", error.message);
@@ -133,7 +127,7 @@ async function runSync() {
     } else {
       for (const row of data ?? []) {
         upsertedRows.push(row);
-        if (newKeys.has(`${row.company_name}|${row.date_added}`)) {
+        if (row.decile_hub_id !== null && newHubIds.has(row.decile_hub_id as number)) {
           inserted++;
         } else {
           updated++;
@@ -144,7 +138,7 @@ async function runSync() {
 
   // ── Enrich newly inserted deals that have no sector yet ───────────────────
   const toEnrich = upsertedRows
-    .filter((r) => newKeys.has(`${r.company_name}|${r.date_added}`) && !r.sector)
+    .filter((r) => r.decile_hub_id !== null && newHubIds.has(r.decile_hub_id as number) && !r.sector)
     .map((r) => ({ id: r.id, company_name: r.company_name }));
 
   let enriched = 0;

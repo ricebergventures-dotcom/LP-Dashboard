@@ -58,6 +58,7 @@ export interface Deal {
   date_added: string;         // ISO date string "YYYY-MM-DD"
   created_at: string;         // ISO datetime string
   created_by: string | null;
+  decile_hub_id: number | null; // Decile Hub pipeline prospect ID — used as upsert key
 }
 
 export interface WeeklySummary {
