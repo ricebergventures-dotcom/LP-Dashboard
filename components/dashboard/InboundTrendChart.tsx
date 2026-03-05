@@ -64,6 +64,7 @@ export function InboundTrendChart({ data }: InboundTrendChartProps) {
                 border: "1px solid hsl(var(--border))",
                 borderRadius: 2,
                 fontSize: 12,
+                color: "hsl(var(--foreground))",
               }}
               formatter={(value: number) => [value, "Deals"]}
             />

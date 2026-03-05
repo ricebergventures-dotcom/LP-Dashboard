@@ -23,7 +23,7 @@ interface StatCardProps {
 function StatCard({ label, value, valueClass, sub, subClass, trend, accentColor }: StatCardProps) {
   return (
     <div
-      className="bg-card border border-border p-5 space-y-2.5"
+      className="bg-card border border-border p-5 space-y-2.5 transition-all duration-200 hover:-translate-y-0.5 hover:shadow-[0_4px_16px_rgba(0,0,0,0.07)] hover:border-border/80"
       style={accentColor ? { borderTopColor: accentColor, borderTopWidth: 2 } : undefined}
     >
       <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium">

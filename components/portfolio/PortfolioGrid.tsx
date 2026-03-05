@@ -254,8 +254,14 @@ export function PortfolioGrid() {
 
       {/* Company grid */}
       <div className="grid grid-cols-1 gap-4 sm:grid-cols-2 xl:grid-cols-3">
-        {filtered.map((company) => (
-          <CompanyCard key={company.name} company={company} />
+        {filtered.map((company, i) => (
+          <div
+            key={company.name}
+            className="animate-fade-up"
+            style={{ animationDelay: `${i * 50}ms` }}
+          >
+            <CompanyCard company={company} />
+          </div>
         ))}
       </div>
 
@@ -286,7 +292,7 @@ function CompanyCard({ company }: { company: Company }) {
   };
 
   return (
-    <div className="group flex flex-col border border-border bg-card transition-all hover:border-foreground/20 hover:shadow-sm">
+    <div className="group flex flex-col border border-border bg-card transition-all duration-200 hover:border-foreground/20 hover:-translate-y-0.5 hover:shadow-[0_6px_20px_rgba(0,0,0,0.08)]">
       {/* Card header */}
       <div className="p-5 pb-3 space-y-3">
         {/* Avatar + stage */}

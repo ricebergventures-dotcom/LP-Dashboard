@@ -53,27 +53,35 @@ async function PipelineContent() {
         <div className="p-6 space-y-5">
 
           {/* KPI grid */}
-          <MetricsRow
-            metrics={metrics}
-            totalDeals={deals.length}
-            sectorCount={sectorCount}
-            geoCount={geoCount}
-          />
+          <div className="animate-fade-up" style={{ animationDelay: "0ms" }}>
+            <MetricsRow
+              metrics={metrics}
+              totalDeals={deals.length}
+              sectorCount={sectorCount}
+              geoCount={geoCount}
+            />
+          </div>
 
           {/* Inbound deal flow — last 12 months */}
-          <InboundTrendChart data={monthly} />
+          <div className="animate-fade-up" style={{ animationDelay: "80ms" }}>
+            <InboundTrendChart data={monthly} />
+          </div>
 
           {/* Sector breakdown + Stage distribution */}
-          <div className="flex gap-5 items-start">
+          <div className="animate-fade-up flex gap-5 items-start" style={{ animationDelay: "160ms" }}>
             <SectorBarChart data={sectors} />
             <StageDonutChart data={stages} />
           </div>
 
           {/* Geography */}
-          <GeographyBarChart data={geographies} />
+          <div className="animate-fade-up" style={{ animationDelay: "240ms" }}>
+            <GeographyBarChart data={geographies} />
+          </div>
 
           {/* AI Weekly Intelligence */}
-          <WeeklySummaryPanel summary={summary} />
+          <div className="animate-fade-up" style={{ animationDelay: "320ms" }}>
+            <WeeklySummaryPanel summary={summary} />
+          </div>
 
         </div>
       </div>
