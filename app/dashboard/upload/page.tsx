@@ -38,12 +38,24 @@ export default function UploadPage() {
             <h2 className="text-sm font-medium text-foreground">Enrich Deal Data</h2>
             <p className="text-sm text-muted-foreground">
               Fill in missing sector and geography for deals that haven&apos;t been
-              enriched yet. Uses Gemini AI — run this after syncing or uploading
-              if the sector &amp; geography charts are empty. Processes up to 20 deals
-              per run; repeat until all are enriched.
+              enriched yet. Uses Gemini AI with Google Search — run this after
+              syncing or uploading if the sector &amp; geography charts are empty.
             </p>
             <div className="pt-2">
               <EnrichButton />
+            </div>
+          </div>
+
+          <div className="pt-6 border-t border-border space-y-1">
+            <h2 className="text-sm font-medium text-foreground">Re-enrich All Companies</h2>
+            <p className="text-sm text-muted-foreground">
+              Re-classify every deal from scratch, regardless of existing sector or
+              geography. Use this after taxonomy changes (e.g. retiring Deep Tech,
+              adding Space &amp; Hardware) to backfill all previously imported companies
+              with the updated classifications.
+            </p>
+            <div className="pt-2">
+              <EnrichButton force />
             </div>
           </div>
         </div>

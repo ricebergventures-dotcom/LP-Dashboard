@@ -11,7 +11,11 @@ type State =
   | { kind: "success"; totalEnriched: number }
   | { kind: "error"; message: string; enrichedSoFar: number };
 
-export function EnrichButton() {
+interface EnrichButtonProps {
+  force?: boolean;
+}
+
+export function EnrichButton({ force = false }: EnrichButtonProps) {
   const [state, setState] = useState<State>({ kind: "idle" });
 
   async function handleEnrich() {
@@ -23,7 +27,8 @@ export function EnrichButton() {
     while (true) {
       let json: ApiResponse<EnrichResult>;
       try {
-        const res = await fetch("/api/enrich", { method: "POST" });
+        const url = force ? "/api/enrich?force=true" : "/api/enrich";
+        const res = await fetch(url, { method: "POST" });
         json = (await res.json()) as ApiResponse<EnrichResult>;
         if (!res.ok || json.error || !json.data) {
           setState({
@@ -77,7 +82,7 @@ export function EnrichButton() {
         className="inline-flex items-center gap-2 px-4 py-2 text-sm font-medium border border-border bg-background transition-colors disabled:opacity-50 disabled:cursor-not-allowed"
       >
         <Sparkles className={`h-4 w-4 ${isLoading ? "animate-pulse" : ""}`} />
-        {isLoading ? "Enriching…" : "Enrich all companies"}
+        {isLoading ? "Enriching…" : force ? "Re-enrich everything" : "Enrich all companies"}
       </button>
 
       {state.kind === "loading" && (
