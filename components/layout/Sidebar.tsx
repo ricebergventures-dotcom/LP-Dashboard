@@ -3,20 +3,17 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { LayoutDashboard, ArrowLeftRight, Upload, Settings, LogOut, Users, Briefcase } from "lucide-react";
+import { BarChart2, Briefcase, Upload, Users, LogOut } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
 import { useAuth } from "@/hooks/useAuth";
-import { Badge } from "@/components/ui/badge";
 
 const NAV_ITEMS = [
-  { label: "Dashboard",     href: "/dashboard",              icon: LayoutDashboard },
-  { label: "Transactions",  href: "/dashboard/transactions", icon: ArrowLeftRight   },
-  { label: "Pipeline",      href: "/dashboard/portfolio",    icon: Briefcase        },
-  { label: "Upload",        href: "/dashboard/upload",       icon: Upload, adminOnly: true },
-  { label: "Users",         href: "/dashboard/admin",        icon: Users,  adminOnly: true },
-  { label: "Settings",      href: "/dashboard/settings",     icon: Settings         },
+  { label: "Pipeline",  href: "/dashboard",           icon: BarChart2  },
+  { label: "Portfolio", href: "/dashboard/portfolio",  icon: Briefcase  },
+  { label: "Upload",    href: "/dashboard/upload",     icon: Upload,  adminOnly: true },
+  { label: "Users",     href: "/dashboard/admin",      icon: Users,   adminOnly: true },
 ];
 
 export function Sidebar() {
@@ -32,24 +29,27 @@ export function Sidebar() {
   };
 
   return (
-    <aside className="flex h-screen w-[220px] shrink-0 flex-col border-r border-border bg-background">
+    <aside
+      className="flex h-screen w-[212px] shrink-0 flex-col"
+      style={{ background: "#0A0C12" }}
+    >
       {/* Logo */}
-      <div className="border-b border-border px-5 py-4">
+      <div className="px-5 pt-5 pb-4" style={{ borderBottom: "1px solid rgba(255,255,255,0.06)" }}>
         <Image
           src="/logo.png"
           alt={fundName}
-          width={140}
-          height={40}
-          className="object-contain"
+          width={116}
+          height={32}
+          className="object-contain brightness-0 invert opacity-85"
           priority
         />
-        <p className="mt-1.5 text-[10px] text-muted-foreground/50 tracking-wide">
+        <p className="mt-2 text-[9px] text-white/20 tracking-[0.18em] uppercase font-mono">
           LP Reporting
         </p>
       </div>
 
       {/* Nav */}
-      <nav className="flex-1 space-y-px p-3">
+      <nav className="flex-1 px-2.5 py-4 space-y-0.5">
         {NAV_ITEMS.map((item) => {
           if ("adminOnly" in item && item.adminOnly && !isAdmin) return null;
           const active =
@@ -60,10 +60,10 @@ export function Sidebar() {
               key={item.href}
               href={item.href}
               className={cn(
-                "flex items-center gap-2.5 px-3 py-2 text-sm transition-colors",
+                "flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-[3px] transition-colors",
                 active
-                  ? "border-l-2 border-accent text-accent font-medium pl-[10px]"
-                  : "text-muted-foreground hover:text-foreground"
+                  ? "bg-white/[0.08] text-[#5CD3D3] font-medium"
+                  : "text-white/35 hover:text-white/70 hover:bg-white/[0.04]"
               )}
             >
               <item.icon className="h-4 w-4 shrink-0" />
@@ -73,24 +73,24 @@ export function Sidebar() {
         })}
       </nav>
 
-      {/* Footer */}
-      <div className="border-t border-border p-4 space-y-2.5">
-        <div className="space-y-1.5">
-          <p className="text-xs font-medium text-foreground truncate">
+      {/* User footer */}
+      <div
+        className="px-4 py-4 space-y-3"
+        style={{ borderTop: "1px solid rgba(255,255,255,0.06)" }}
+      >
+        <div className="min-w-0">
+          <p className="text-[12px] text-white/50 truncate leading-snug">
             {profile?.email ?? "—"}
           </p>
-          <Badge
-            variant={profile?.role === "admin" ? "active" : "default"}
-            className="text-[10px] px-1.5 py-0"
-          >
+          <p className="text-[10px] text-white/25 capitalize mt-0.5">
             {profile?.role ?? "viewer"}
-          </Badge>
+          </p>
         </div>
         <button
           onClick={() => void handleSignOut()}
-          className="flex items-center gap-2 text-xs text-muted-foreground hover:text-foreground transition-colors"
+          className="flex items-center gap-1.5 text-[11px] text-white/25 hover:text-white/50 transition-colors"
         >
-          <LogOut className="h-3.5 w-3.5 shrink-0" />
+          <LogOut className="h-3 w-3 shrink-0" />
           Sign out
         </button>
       </div>
