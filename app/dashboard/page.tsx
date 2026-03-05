@@ -7,7 +7,6 @@ import { StageDonutChart, StageDonutChartSkeleton } from "@/components/dashboard
 import { GeographyBarChart, GeographyBarChartSkeleton } from "@/components/dashboard/GeographyBarChart";
 import { InboundTrendChart, InboundTrendChartSkeleton } from "@/components/dashboard/InboundTrendChart";
 import { WeeklySummaryPanel, WeeklySummaryPanelSkeleton } from "@/components/dashboard/WeeklySummaryPanel";
-import { TransactionsTable, TransactionsTableSkeleton } from "@/components/dashboard/TransactionsTable";
 import {
   computeMetrics,
   computeSectorCounts,
@@ -23,7 +22,7 @@ export const dynamic = "force-dynamic";
 async function PipelineContent() {
   const supabase = createServerClient();
 
-  const [dealsResult, summaryResult, { data: { user } }] = await Promise.all([
+  const [dealsResult, summaryResult] = await Promise.all([
     supabase.from("deals").select("*").order("date_added", { ascending: false }),
     supabase
       .from("weekly_summaries")
@@ -31,21 +30,10 @@ async function PipelineContent() {
       .order("generated_at", { ascending: false })
       .limit(1)
       .single(),
-    supabase.auth.getUser(),
   ]);
 
   const deals = (dealsResult.data as Deal[]) ?? [];
   const summary = summaryResult.error ? null : (summaryResult.data as WeeklySummary);
-
-  let isAdmin = false;
-  if (user) {
-    const { data: profile } = await supabase
-      .from("profiles")
-      .select("role")
-      .eq("id", user.id)
-      .single();
-    isAdmin = profile?.role === "admin";
-  }
 
   const metrics = computeMetrics(deals);
   const sectors = computeSectorCounts(deals);
@@ -54,7 +42,6 @@ async function PipelineContent() {
   const monthly = computeMonthlyInbound(deals);
   const sectorCount = new Set(deals.map((d) => d.sector).filter(Boolean)).size;
   const geoCount = new Set(deals.map((d) => d.geography).filter(Boolean)).size;
-  const recentDeals = deals.slice(0, 15);
 
   // suppress unused warning
   void geoCount;
@@ -88,9 +75,6 @@ async function PipelineContent() {
           {/* AI Weekly Intelligence */}
           <WeeklySummaryPanel summary={summary} />
 
-          {/* Recent deals */}
-          <TransactionsTable deals={recentDeals} />
-
         </div>
       </div>
     </div>
@@ -111,7 +95,6 @@ function PipelineSkeleton() {
           </div>
           <GeographyBarChartSkeleton />
           <WeeklySummaryPanelSkeleton />
-          <TransactionsTableSkeleton />
         </div>
       </div>
     </div>

@@ -26,6 +26,23 @@ export function createRouteClient() {
   return makeClient();
 }
 
+/** Service-role client — bypasses RLS for trusted server-side writes.
+ *  Requires SUPABASE_SERVICE_ROLE_KEY in env vars.
+ */
+export function createServiceClient() {
+  return createClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!,
+    {
+      auth: { persistSession: false },
+      global: {
+        fetch: (url: RequestInfo | URL, options: RequestInit = {}) =>
+          fetch(url, { ...options, cache: "no-store" }),
+      },
+    }
+  );
+}
+
 // Cookie-aware client for middleware — reads/writes session cookies so
 // Supabase Auth works across server components and API routes.
 export function createMiddlewareClient(

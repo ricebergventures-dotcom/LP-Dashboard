@@ -1,6 +1,6 @@
 import { NextResponse } from "next/server";
 import { subDays, startOfDay, endOfDay, format } from "date-fns";
-import { createRouteClient } from "@/lib/supabase-server";
+import { createRouteClient, createServiceClient } from "@/lib/supabase-server";
 import { generateText } from "@/lib/gemini";
 import { SUMMARY_TEMPERATURE, SUMMARY_MAX_TOKENS, SUMMARY_SYSTEM_PROMPT } from "@/lib/openai";
 import {
@@ -35,6 +35,7 @@ export async function GET() {
 
 export async function POST() {
   const supabase = createRouteClient();
+  const serviceSupabase = createServiceClient(); // bypasses RLS for the insert
 
   // Fetch last 7 days of deals
   const now = new Date();
@@ -84,7 +85,7 @@ export async function POST() {
     maxTokens: SUMMARY_MAX_TOKENS,
   });
 
-  const { data: saved, error: saveErr } = await supabase
+  const { data: saved, error: saveErr } = await serviceSupabase
     .from("weekly_summaries")
     .insert({
       week_start: format(weekStart, "yyyy-MM-dd"),
