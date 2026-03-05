@@ -72,6 +72,19 @@ export interface WeeklySummary {
   generated_by: string | null;
 }
 
+export interface MonthlySummary {
+  id: string;
+  month: string;              // "YYYY-MM" e.g. "2026-02"
+  month_label: string;        // "February 2026"
+  summary_text: string;
+  deal_count: number;
+  sector_breakdown: Record<string, number>;
+  geography_breakdown: Record<string, number>;
+  stage_distribution: Record<string, number>;
+  generated_at: string;       // ISO datetime string
+  generated_by: string | null;
+}
+
 export interface Profile {
   id: string;
   email: string;

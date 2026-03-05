@@ -6,7 +6,7 @@ import { SectorBarChart, SectorBarChartSkeleton } from "@/components/dashboard/S
 import { StageDonutChart, StageDonutChartSkeleton } from "@/components/dashboard/StageDonutChart";
 import { GeographyBarChart, GeographyBarChartSkeleton } from "@/components/dashboard/GeographyBarChart";
 import { InboundTrendChart, InboundTrendChartSkeleton } from "@/components/dashboard/InboundTrendChart";
-import { WeeklySummaryPanel, WeeklySummaryPanelSkeleton } from "@/components/dashboard/WeeklySummaryPanel";
+import { MonthlySummaryPanel, MonthlySummaryPanelSkeleton } from "@/components/dashboard/MonthlySummaryPanel";
 import {
   computeMetrics,
   computeSectorCounts,
@@ -14,7 +14,7 @@ import {
   computeGeographyCounts,
   computeMonthlyInbound,
 } from "@/utils/aggregations";
-import type { Deal, WeeklySummary } from "@/types";
+import type { Deal, MonthlySummary } from "@/types";
 
 export const metadata = { title: "Pipeline" };
 export const dynamic = "force-dynamic";
@@ -25,7 +25,7 @@ async function PipelineContent() {
   const [dealsResult, summaryResult] = await Promise.all([
     supabase.from("deals").select("*").order("date_added", { ascending: false }),
     supabase
-      .from("weekly_summaries")
+      .from("monthly_summaries")
       .select("*")
       .order("generated_at", { ascending: false })
       .limit(1)
@@ -33,7 +33,7 @@ async function PipelineContent() {
   ]);
 
   const deals = (dealsResult.data as Deal[]) ?? [];
-  const summary = summaryResult.error ? null : (summaryResult.data as WeeklySummary);
+  const summary = summaryResult.error ? null : (summaryResult.data as MonthlySummary);
 
   const metrics = computeMetrics(deals);
   const sectors = computeSectorCounts(deals);
@@ -78,9 +78,9 @@ async function PipelineContent() {
             <GeographyBarChart data={geographies} />
           </div>
 
-          {/* AI Weekly Intelligence */}
+          {/* AI Monthly Intelligence */}
           <div className="animate-fade-up" style={{ animationDelay: "320ms" }}>
-            <WeeklySummaryPanel summary={summary} />
+            <MonthlySummaryPanel summary={summary} />
           </div>
 
         </div>
@@ -102,7 +102,7 @@ function PipelineSkeleton() {
             <StageDonutChartSkeleton />
           </div>
           <GeographyBarChartSkeleton />
-          <WeeklySummaryPanelSkeleton />
+          <MonthlySummaryPanelSkeleton />
         </div>
       </div>
     </div>
