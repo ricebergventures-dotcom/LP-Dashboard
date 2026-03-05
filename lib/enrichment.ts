@@ -13,16 +13,16 @@ export interface EnrichmentResult {
 // Hardware and space startups are placed in their own specific categories.
 // ─────────────────────────────────────────────────────────────────────────────
 
-const ENRICH_SYSTEM = `You are a startup research analyst. Given a company name, use Google Search to find what the company does and where it is based, then return a JSON classification.
+const ENRICH_SYSTEM = `You are a startup research analyst. Your job is to classify a company into a sector and country using Google Search.
 
-ALWAYS search for the company before answering. Do not rely on training data alone — many of these are early-stage startups not in your training data.
-
-Return ONLY a valid JSON object. No markdown, no code fences, no explanation, no citations — just the JSON.
+STEP 1 — SEARCH FIRST, ALWAYS. Search for the company name before answering. Most of these are early-stage startups — do not rely on training data alone.
+STEP 2 — COMMIT. If your search returned ANY useful information about what the company does, you MUST pick one of the 7 specific sectors below. "Other" is only valid for companies you searched for and found nothing about at all (stealth / no web presence).
+STEP 3 — OUTPUT. Return ONLY a valid JSON object. No markdown, no code fences, no explanation, no citations — just the JSON.
 
 Format: {"sector":"<value>","geography":"<value>"}
 
 ━━━ SECTOR ━━━
-Choose the single best match from EXACTLY these 8 values. "Other" is a last resort — if you are unsure, search harder.
+Pick EXACTLY one of these 7 values (never "Deep Tech", never anything else):
 
 • Technology   — AI/ML, SaaS, B2B software, developer tools, cybersecurity, data platforms, cloud infrastructure, APIs, automation, no-code/low-code, analytics, AdTech
 • Healthcare   — digital health, medtech, biotech, drug discovery, genomics, diagnostics, life sciences, therapeutics, bioinformatics, wellness, pharma, telemedicine, medical devices
@@ -31,25 +31,28 @@ Choose the single best match from EXACTLY these 8 values. "Other" is a last reso
 • Hardware     — semiconductors, chips, quantum computing, robotics, advanced materials, photonics, IoT devices, embedded systems, computing architecture, physical security hardware
 • Finance      — payments, neobanking, lending, insurance, trading platforms, financial infrastructure, accounting software, crypto, blockchain, DeFi, Web3, wealthtech, regtech
 • Consumer     — e-commerce, marketplaces, social apps, gaming, media, entertainment, direct-to-consumer, food tech, travel, edtech, fitness, home goods, HR tech
-• Other        — use ONLY if after searching the company genuinely fits none of the above
+• Other        — ONLY if you searched and found NO information about what the company does
 
-CRITICAL: NEVER return "Deep Tech" or "DeepTech" — this label does not exist in the taxonomy.
-If you would have chosen "Deep Tech", apply this rule instead:
+RULE: If you found the company and understood what it does → you MUST use one of the 7 specific sectors above. Returning "Other" when you have search results is wrong.
+
+CRITICAL: NEVER return "Deep Tech" or "DeepTech" — this label does not exist.
+If you would have chosen "Deep Tech", use this instead:
   → aerospace / satellites / launch / defence / drones / hyperloop → Space
   → semiconductors / chips / quantum / robotics / photonics / embedded → Hardware
 
-━━━ DISAMBIGUATION RULES ━━━
-When a company sits at the boundary of two sectors, use the PRIMARY output or application:
-• AI tool used by doctors / hospitals → Healthcare (the AI is the method, health is the product)
-• AI tool used by businesses generally → Technology
-• Hardware security device / HSM / TPM / PUF → Hardware (not Technology)
-• Software cybersecurity / zero-trust / SIEM → Technology (not Hardware)
-• Space-based earth observation for climate → Space (not Climate)
-• Clean-energy propulsion for rockets → Space (not Climate)
-• Biochar / soil carbon / agri carbon credits → Climate (not Hardware)
-• Computational pathology / digital pathology → Healthcare (not Technology)
-• Sleep monitoring device / diagnostic wearable → Healthcare (not Hardware)
-• Drug discovery software / bioinformatics → Healthcare (not Technology)
+━━━ DISAMBIGUATION ━━━
+When a company sits at the boundary of two sectors, use the PRIMARY end-application:
+• AI tool built for doctors / hospitals / clinics → Healthcare
+• AI tool built for businesses in general → Technology
+• Hardware security device (HSM / TPM / PUF / physical token) → Hardware
+• Software cybersecurity / zero-trust / SIEM / threat detection → Technology
+• Space-based earth observation used for climate monitoring → Space
+• Biochar / soil carbon / agri carbon credits → Climate
+• Computational or digital pathology platform → Healthcare
+• Contact-free sleep monitoring / diagnostic wearable → Healthcare
+• Drug discovery software / bioinformatics platform → Healthcare
+• Quality assurance / testing software → Technology
+• Physical computing architecture / novel ISA / chip design → Hardware
 
 ━━━ GEOGRAPHY ━━━
 Return the company's primary country of operations or country of incorporation.
@@ -82,9 +85,9 @@ CRITICAL RULES:
 export async function enrichCompany(companyName: string): Promise<EnrichmentResult> {
   const text = await generateText({
     systemPrompt: ENRICH_SYSTEM,
-    userMessage: `Search Google for the startup "${companyName}" — find what they do, what industry they are in, and which country they are based in or incorporated in. Then return the JSON classification.`,
+    userMessage: `Search Google for the startup "${companyName}". Find out: (1) what the company does, (2) what industry it operates in, (3) which country it is headquartered or incorporated in. If the first search is not specific enough, search again with more keywords. Once you have found what the company does, you MUST commit to one of the 7 specific sectors — do not return "Other" if you found useful information. Return the JSON classification.`,
     temperature: 0.2,
-    maxTokens: 200,
+    maxTokens: 400,
     useSearch: true,
   });
 
