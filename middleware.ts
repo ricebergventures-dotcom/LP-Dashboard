@@ -30,9 +30,9 @@ export async function middleware(request: NextRequest) {
       return NextResponse.redirect(new URL("/auth/login", request.url));
     }
 
-    // Check approval via raw REST fetch using the user's access token
+    // Check approval + role via raw REST fetch using the user's access token
     const profileRes = await fetch(
-      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/profiles?id=eq.${session.user.id}&select=approved`,
+      `${process.env.NEXT_PUBLIC_SUPABASE_URL}/rest/v1/profiles?id=eq.${session.user.id}&select=approved,role`,
       {
         headers: {
           apikey: process.env.NEXT_PUBLIC_SUPABASE_ANON_KEY!,
@@ -41,11 +41,19 @@ export async function middleware(request: NextRequest) {
       }
     );
 
-    const profiles = (await profileRes.json()) as { approved: boolean }[];
-    const approved = profiles[0]?.approved === true;
+    const profiles = (await profileRes.json()) as { approved: boolean; role: string }[];
+    const profile = profiles[0];
+    const approved = profile?.approved === true;
 
     if (!approved) {
       return NextResponse.redirect(new URL("/auth/pending", request.url));
+    }
+
+    // Admin-only routes — redirect viewers to the dashboard root
+    const isAdmin = profile?.role === "admin";
+    const adminOnlyPaths = ["/dashboard/upload", "/dashboard/admin"];
+    if (!isAdmin && adminOnlyPaths.some((p) => pathname.startsWith(p))) {
+      return NextResponse.redirect(new URL("/dashboard", request.url));
     }
   }
 
