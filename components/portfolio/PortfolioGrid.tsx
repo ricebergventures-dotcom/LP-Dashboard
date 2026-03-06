@@ -21,7 +21,7 @@ const COMPANIES: Company[] = [
   {
     name: "Panakeia",
     tagline: "AI-powered computational pathology",
-    sector: "Healthcare",
+    sector: "Life Science",
     stage: "Seed",
     country: "United Kingdom",
     backedAt: "2023",
@@ -34,7 +34,7 @@ const COMPANIES: Company[] = [
   {
     name: "Rigor AI",
     tagline: "Quality assurance for mission-critical software",
-    sector: "Technology",
+    sector: "Future of Compute",
     stage: "Pre-Seed",
     country: "Switzerland",
     backedAt: "2024",
@@ -47,7 +47,7 @@ const COMPANIES: Company[] = [
   {
     name: "Signatur Bio",
     tagline: "Early disease detection through liquid biopsy",
-    sector: "Healthcare",
+    sector: "Life Science",
     stage: "Pre-Seed",
     country: "Switzerland",
     backedAt: "2023",
@@ -60,7 +60,7 @@ const COMPANIES: Company[] = [
   {
     name: "Surf Therapeutics",
     tagline: "Next-gen surfactant therapies for lung disease",
-    sector: "Healthcare",
+    sector: "Life Science",
     stage: "Seed",
     country: "Switzerland",
     backedAt: "2022",
@@ -73,7 +73,7 @@ const COMPANIES: Company[] = [
   {
     name: "Sleepiz",
     tagline: "Contact-free clinical sleep monitoring at home",
-    sector: "Healthcare",
+    sector: "Life Science",
     stage: "Seed",
     country: "Switzerland",
     backedAt: "2023",
@@ -86,7 +86,7 @@ const COMPANIES: Company[] = [
   {
     name: "Swisspod",
     tagline: "Hyperloop transportation technology",
-    sector: "Space",
+    sector: "Spacetech",
     stage: "Seed",
     country: "Switzerland",
     backedAt: "2022",
@@ -99,7 +99,7 @@ const COMPANIES: Company[] = [
   {
     name: "Ethereal X",
     tagline: "Next-generation space infrastructure",
-    sector: "Space",
+    sector: "Spacetech",
     stage: "Pre-Seed",
     country: "Global",
     backedAt: "2024",
@@ -112,7 +112,7 @@ const COMPANIES: Company[] = [
   {
     name: "Manas TU Space",
     tagline: "Affordable small satellites for Central Asia",
-    sector: "Space",
+    sector: "Spacetech",
     stage: "Pre-Seed",
     country: "Kyrgyzstan",
     backedAt: "2023",
@@ -125,7 +125,7 @@ const COMPANIES: Company[] = [
   {
     name: "Keyron",
     tagline: "Tamper-proof hardware authentication",
-    sector: "Hardware",
+    sector: "Cybersecurity",
     stage: "Pre-Seed",
     country: "Switzerland",
     backedAt: "2024",
@@ -138,7 +138,7 @@ const COMPANIES: Company[] = [
   {
     name: "Arch0",
     tagline: "Foundational computing architecture",
-    sector: "Hardware",
+    sector: "Future of Compute",
     stage: "Pre-Seed",
     country: "Global",
     backedAt: "2024",
@@ -151,7 +151,7 @@ const COMPANIES: Company[] = [
   {
     name: "Bchar",
     tagline: "Carbon capture through biochar production",
-    sector: "Climate",
+    sector: "Climate Tech",
     stage: "Pre-Seed",
     country: "Switzerland",
     backedAt: "2023",
@@ -166,13 +166,13 @@ const COMPANIES: Company[] = [
 const ALL_SECTORS = ["All", ...Array.from(new Set(COMPANIES.map((c) => c.sector))).sort()];
 
 const SECTOR_STYLE: Record<string, { bg: string; text: string; border: string; dot: string }> = {
-  Technology:  { bg: "bg-[#5CD3D3]/10",  text: "text-[#5CD3D3]",   border: "border-[#5CD3D3]/25",  dot: "#5CD3D3" },
-  Healthcare:  { bg: "bg-violet-500/10",  text: "text-violet-400",  border: "border-violet-500/25", dot: "#A78BFA" },
-  Space:       { bg: "bg-indigo-500/10",  text: "text-indigo-400",  border: "border-indigo-500/25", dot: "#818CF8" },
-  Climate:     { bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/25",dot: "#34D399" },
-  Hardware:    { bg: "bg-amber-500/10",   text: "text-amber-400",   border: "border-amber-500/25",  dot: "#FBBF24" },
-  Finance:     { bg: "bg-blue-500/10",    text: "text-blue-400",    border: "border-blue-500/25",   dot: "#60A5FA" },
-  Consumer:    { bg: "bg-orange-500/10",  text: "text-orange-400",  border: "border-orange-500/25", dot: "#FB923C" },
+  "Life Science":      { bg: "bg-violet-500/10",  text: "text-violet-400",  border: "border-violet-500/25",  dot: "#A78BFA" },
+  "Spacetech":         { bg: "bg-indigo-500/10",  text: "text-indigo-400",  border: "border-indigo-500/25",  dot: "#818CF8" },
+  "Future of Compute": { bg: "bg-[#5CD3D3]/10",   text: "text-[#5CD3D3]",   border: "border-[#5CD3D3]/25",   dot: "#5CD3D3" },
+  "Quantum":           { bg: "bg-fuchsia-500/10", text: "text-fuchsia-400", border: "border-fuchsia-500/25", dot: "#E879F9" },
+  "Climate Tech":      { bg: "bg-emerald-500/10", text: "text-emerald-400", border: "border-emerald-500/25", dot: "#34D399" },
+  "Cybersecurity":     { bg: "bg-red-500/10",     text: "text-red-400",     border: "border-red-500/25",     dot: "#F87171" },
+  "Fintech":           { bg: "bg-blue-500/10",    text: "text-blue-400",    border: "border-blue-500/25",    dot: "#60A5FA" },
 };
 
 const STAGE_LABEL: Record<string, string> = {

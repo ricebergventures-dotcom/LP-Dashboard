@@ -9,8 +9,9 @@ export interface EnrichmentResult {
 }
 
 // ─── Sector taxonomy ──────────────────────────────────────────────────────────
-// "Deep Tech" is intentionally excluded — it is too broad to be useful.
-// Hardware and space startups are placed in their own specific categories.
+// 7 specific sectors + "Other". Old labels (Technology, Healthcare, Space,
+// Climate, Hardware, Finance, Consumer) are remapped in parseResult so that
+// legacy DB rows update correctly on re-enrichment.
 // ─────────────────────────────────────────────────────────────────────────────
 
 const ENRICH_SYSTEM = `You are a startup research analyst. Your job is to classify a company into a sector and country using Google Search.
@@ -22,37 +23,37 @@ STEP 3 — OUTPUT. Return ONLY a valid JSON object. No markdown, no code fences,
 Format: {"sector":"<value>","geography":"<value>"}
 
 ━━━ SECTOR ━━━
-Pick EXACTLY one of these 7 values (never "Deep Tech", never anything else):
+Pick EXACTLY one of these 7 values (case-sensitive, never anything else):
 
-• Technology   — AI/ML, SaaS, B2B software, developer tools, cybersecurity, data platforms, cloud infrastructure, APIs, automation, no-code/low-code, analytics, AdTech
-• Healthcare   — digital health, medtech, biotech, drug discovery, genomics, diagnostics, life sciences, therapeutics, bioinformatics, wellness, pharma, telemedicine, medical devices
-• Space        — satellites, space infrastructure, orbital systems, launch vehicles, drones/UAVs, aerospace, earth observation, defence tech, hypersonic transport, hyperloop
-• Climate      — clean energy, solar, wind, carbon capture, EVs, agritech, precision agriculture, sustainable materials, recycling, water tech, circular economy, energy storage
-• Hardware     — semiconductors, chips, quantum computing, robotics, advanced materials, photonics, IoT devices, embedded systems, computing architecture, physical security hardware
-• Finance      — payments, neobanking, lending, insurance, trading platforms, financial infrastructure, accounting software, crypto, blockchain, DeFi, Web3, wealthtech, regtech
-• Consumer     — e-commerce, marketplaces, social apps, gaming, media, entertainment, direct-to-consumer, food tech, travel, edtech, fitness, home goods, HR tech
-• Other        — ONLY if you searched and found NO information about what the company does
+• Life Science       — biotech, pharma, therapeutics, drug discovery, genomics, diagnostics, life sciences, medtech, digital health, medical devices, bioinformatics, computational pathology, clinical AI, liquid biopsy, surgical robotics, telemedicine, wellness platforms
+• Spacetech          — satellites, orbital systems, launch vehicles, drones/UAVs, aerospace, earth observation, defence tech, hypersonic transport, hyperloop, space infrastructure, propulsion, re-entry systems
+• Future of Compute  — AI/ML, SaaS, B2B software, developer tools, data platforms, cloud infrastructure, APIs, automation, no-code/low-code, analytics, AdTech, semiconductors, chips, robotics, embedded systems, computing architecture, photonics, IoT devices, advanced materials, quality assurance/testing software, HR tech
+• Quantum            — quantum computing (hardware and software), quantum sensing, quantum communications, quantum cryptography, post-quantum security, quantum simulation
+• Climate Tech       — clean energy, solar, wind, carbon capture, biochar/carbon credits, EVs, agritech, precision agriculture, sustainable materials, recycling, water tech, circular economy, energy storage
+• Cybersecurity      — zero-trust, SIEM, threat detection, endpoint security, network security, identity & access management, fraud prevention, hardware security modules (HSM/TPM/PUF), physical unclonable functions, penetration testing, security operations
+• Fintech            — payments, neobanking, lending, insurance, trading platforms, financial infrastructure, accounting software, crypto, blockchain, DeFi, Web3, wealthtech, regtech, open banking
+• Other              — ONLY if you searched and found NO information about what the company does
 
 RULE: If you found the company and understood what it does → you MUST use one of the 7 specific sectors above. Returning "Other" when you have search results is wrong.
 
-CRITICAL: NEVER return "Deep Tech" or "DeepTech" — this label does not exist.
-If you would have chosen "Deep Tech", use this instead:
-  → aerospace / satellites / launch / defence / drones / hyperloop → Space
-  → semiconductors / chips / quantum / robotics / photonics / embedded → Hardware
+CRITICAL: NEVER return "Deep Tech", "DeepTech", "Technology", "Healthcare", "Hardware", "Space", "Climate", "Finance", or "Consumer" — these labels do not exist in the taxonomy.
 
 ━━━ DISAMBIGUATION ━━━
 When a company sits at the boundary of two sectors, use the PRIMARY end-application:
-• AI tool built for doctors / hospitals / clinics → Healthcare
-• AI tool built for businesses in general → Technology
-• Hardware security device (HSM / TPM / PUF / physical token) → Hardware
-• Software cybersecurity / zero-trust / SIEM / threat detection → Technology
-• Space-based earth observation used for climate monitoring → Space
-• Biochar / soil carbon / agri carbon credits → Climate
-• Computational or digital pathology platform → Healthcare
-• Contact-free sleep monitoring / diagnostic wearable → Healthcare
-• Drug discovery software / bioinformatics platform → Healthcare
-• Quality assurance / testing software → Technology
-• Physical computing architecture / novel ISA / chip design → Hardware
+• AI/ML tool built for doctors / hospitals / clinics / diagnostics → Life Science
+• AI/ML tool built for businesses in general → Future of Compute
+• Quantum chip / quantum hardware → Quantum
+• Post-quantum encryption software → Cybersecurity
+• Hardware security device (HSM / TPM / PUF / physical token) → Cybersecurity
+• Software cybersecurity / SIEM / threat detection → Cybersecurity
+• Space-based earth observation used for climate monitoring → Spacetech (space is the primary medium)
+• Biochar / soil carbon / agri carbon credits → Climate Tech
+• Computational or digital pathology platform → Life Science
+• Contact-free sleep monitoring / diagnostic wearable → Life Science
+• Drug discovery software / bioinformatics platform → Life Science
+• Quality assurance / testing software → Future of Compute
+• Physical computing architecture / novel ISA / chip design → Future of Compute
+• Crypto / DeFi / blockchain → Fintech
 
 ━━━ GEOGRAPHY ━━━
 Return the company's primary country of operations or country of incorporation.
@@ -65,21 +66,21 @@ CRITICAL RULES:
 • Use a region (Europe, Southeast Asia, Latin America, Middle East, Africa) ONLY as last resort when search truly cannot determine a country.
 
 ━━━ EXAMPLES ━━━
-{"sector":"Technology","geography":"United States"} — OpenAI
-{"sector":"Finance","geography":"United Kingdom"} — Revolut
-{"sector":"Healthcare","geography":"Switzerland"} — Molecular Partners
-{"sector":"Technology","geography":"Germany"} — Personio
-{"sector":"Climate","geography":"United States"} — Carbon Engineering
-{"sector":"Healthcare","geography":"Israel"} — Medigus
-{"sector":"Consumer","geography":"India"} — Meesho
-{"sector":"Finance","geography":"United States"} — Stripe
-{"sector":"Space","geography":"United States"} — SpaceX
-{"sector":"Space","geography":"Switzerland"} — Swisspod
-{"sector":"Hardware","geography":"Switzerland"} — Keyron
-{"sector":"Space","geography":"Kyrgyzstan"} — Manas TU Space
-{"sector":"Technology","geography":"Estonia"} — Pipedrive
-{"sector":"Healthcare","geography":"United Kingdom"} — Babylon Health
-{"sector":"Climate","geography":"Switzerland"} — Bchar`;
+{"sector":"Future of Compute","geography":"United States"} — OpenAI
+{"sector":"Fintech","geography":"United Kingdom"} — Revolut
+{"sector":"Life Science","geography":"Switzerland"} — Molecular Partners
+{"sector":"Future of Compute","geography":"Germany"} — Personio
+{"sector":"Climate Tech","geography":"United States"} — Carbon Engineering
+{"sector":"Life Science","geography":"Israel"} — Medigus
+{"sector":"Fintech","geography":"United States"} — Stripe
+{"sector":"Spacetech","geography":"United States"} — SpaceX
+{"sector":"Spacetech","geography":"Switzerland"} — Swisspod
+{"sector":"Cybersecurity","geography":"Switzerland"} — Keyron
+{"sector":"Spacetech","geography":"Kyrgyzstan"} — Manas TU Space
+{"sector":"Future of Compute","geography":"Estonia"} — Pipedrive
+{"sector":"Life Science","geography":"United Kingdom"} — Babylon Health
+{"sector":"Climate Tech","geography":"Switzerland"} — Bchar
+{"sector":"Quantum","geography":"United States"} — IonQ`;
 
 
 export async function enrichCompany(companyName: string): Promise<EnrichmentResult> {
@@ -103,24 +104,38 @@ export async function enrichCompany(companyName: string): Promise<EnrichmentResu
   }
 }
 
+// Maps old sector labels (still emitted by Gemini before cache clears) → new taxonomy.
+const LEGACY_REMAP: Record<string, string> = {
+  "Technology": "Future of Compute",
+  "Healthcare": "Life Science",
+  "Space":      "Spacetech",
+  "Climate":    "Climate Tech",
+  "Hardware":   "Future of Compute",
+  "Finance":    "Fintech",
+  "Consumer":   "Other",
+  "Deep Tech":  "Future of Compute",
+};
+
 function parseResult(json: { sector?: unknown; geography?: unknown }): EnrichmentResult {
   const VALID_SECTORS = new Set([
-    "Technology", "Healthcare", "Space", "Climate", "Hardware", "Finance", "Consumer",
+    "Life Science", "Spacetech", "Future of Compute", "Quantum",
+    "Climate Tech", "Cybersecurity", "Fintech",
   ]);
   const BAD_GEOS = new Set(["", "Global", "Worldwide", "International", "N/A", "n/a", "Unknown"]);
 
   const rawSector = typeof json.sector === "string" ? json.sector.trim() : "";
   const rawGeo    = typeof json.geography === "string" ? json.geography.trim() : "";
 
-  // Accept valid sector; remap legacy / too-broad labels.
   // Normalise to catch all capitalisation / spacing variants Gemini might produce
-  // (e.g. "deep tech", "DEEP TECH", "Deep-Tech", "deeptech").
   const normalised = rawSector.toLowerCase().replace(/[\s_-]+/g, "");
+
   let sector: string;
   if (normalised === "deeptech") {
-    sector = "Hardware"; // conservative fallback; force re-enrich will correct if wrong
+    sector = "Future of Compute";
   } else if (VALID_SECTORS.has(rawSector)) {
     sector = rawSector;
+  } else if (LEGACY_REMAP[rawSector]) {
+    sector = LEGACY_REMAP[rawSector]!;
   } else {
     sector = "Other";
   }

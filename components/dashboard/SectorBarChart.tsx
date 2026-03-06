@@ -14,21 +14,26 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { EmptyState } from "@/components/dashboard/EmptyState";
 import type { SectorCount } from "@/types";
 
-// Distinct color per sector.
-// "Deep Tech" is retired — old deals remapped to Hardware on re-enrichment.
 const SECTOR_COLORS: Record<string, string> = {
-  Technology:  "#5CD3D3",
-  Healthcare:  "#A78BFA",
-  Space:       "#818CF8",
-  Climate:     "#34D399",
-  Hardware:    "#FBBF24",
-  Finance:     "#60A5FA",
-  Consumer:    "#FB923C",
-  // Legacy alias kept so old DB values still render with a color
-  "Deep Tech": "#FBBF24",
-  Other:       "#94A3B8",
+  "Life Science":      "#A78BFA", // violet-400
+  "Spacetech":         "#818CF8", // indigo-400
+  "Future of Compute": "#5CD3D3", // brand teal
+  "Quantum":           "#E879F9", // fuchsia-400
+  "Climate Tech":      "#34D399", // emerald-400
+  "Cybersecurity":     "#F87171", // red-400
+  "Fintech":           "#60A5FA", // blue-400
+  "Other":             "#94A3B8", // slate-400
+  // Legacy aliases so old DB rows still render a color while re-enrichment runs
+  "Technology":  "#5CD3D3",
+  "Healthcare":  "#A78BFA",
+  "Space":       "#818CF8",
+  "Climate":     "#34D399",
+  "Hardware":    "#FBBF24",
+  "Finance":     "#60A5FA",
+  "Consumer":    "#FB923C",
+  "Deep Tech":   "#FBBF24",
 };
-const FALLBACK_PALETTE = ["#5CD3D3", "#A78BFA", "#818CF8", "#34D399", "#FBBF24", "#60A5FA", "#FB923C", "#94A3B8"];
+const FALLBACK_PALETTE = ["#5CD3D3", "#A78BFA", "#818CF8", "#34D399", "#E879F9", "#60A5FA", "#F87171", "#94A3B8"];
 
 function getSectorColor(sector: string, index: number): string {
   return SECTOR_COLORS[sector] ?? FALLBACK_PALETTE[index % FALLBACK_PALETTE.length] ?? "#5CD3D3";
@@ -77,7 +82,7 @@ export function SectorBarChart({ data }: SectorBarChartProps) {
             <YAxis
               dataKey="sector"
               type="category"
-              width={112}
+              width={148}
               tick={{ fontSize: 11, fill: "hsl(var(--muted-foreground))" }}
               axisLine={false}
               tickLine={false}
