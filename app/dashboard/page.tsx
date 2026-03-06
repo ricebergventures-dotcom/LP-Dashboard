@@ -43,13 +43,7 @@ async function PipelineContent() {
   const monthly = computeMonthlyInbound(deals);
   const sectorCount = new Set(deals.map((d) => d.sector).filter(Boolean)).size;
   const geoCount = new Set(deals.map((d) => d.geography).filter(Boolean)).size;
-  const MEMO_STAGES = new Set([
-    "Collect Materials",
-    "Develop Deal Memo [Hold]",
-    "IC Evaluation",
-    "Start Due Diligence",
-  ]);
-  const memoDeals = deals.filter((d) => MEMO_STAGES.has(d.stage));
+  const memoDeals = deals.filter((d) => d.stage === "Develop Deal Memo [Hold]");
 
   // suppress unused warning
   void geoCount;
