@@ -14,7 +14,6 @@ import {
   computeStageCounts,
   computeGeographyCounts,
   computeMonthlyInbound,
-  groupStage,
 } from "@/utils/aggregations";
 import type { Deal, MonthlySummary } from "@/types";
 
@@ -44,7 +43,13 @@ async function PipelineContent() {
   const monthly = computeMonthlyInbound(deals);
   const sectorCount = new Set(deals.map((d) => d.sector).filter(Boolean)).size;
   const geoCount = new Set(deals.map((d) => d.geography).filter(Boolean)).size;
-  const memoDeals = deals.filter((d) => groupStage(d.stage) === "Developing Deal Memo");
+  const MEMO_STAGES = new Set([
+    "Collect Materials",
+    "Develop Deal Memo [Hold]",
+    "IC Evaluation",
+    "Start Due Diligence",
+  ]);
+  const memoDeals = deals.filter((d) => MEMO_STAGES.has(d.stage));
 
   // suppress unused warning
   void geoCount;
