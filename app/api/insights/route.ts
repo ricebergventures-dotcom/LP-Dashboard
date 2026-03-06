@@ -42,9 +42,10 @@ export async function POST(request: Request) {
   try {
     text = await generateText({
       systemPrompt: SYSTEM_PROMPT,
-      userMessage: `Company: ${company_name}`,
+      userMessage: `Search for the startup "${company_name}" and provide the structured analysis.`,
       temperature: 0.2,
       maxTokens: 600,
+      useSearch: true,
     });
   } catch (e) {
     const msg = e instanceof Error ? e.message : "Gemini API call failed";
