@@ -12,20 +12,53 @@ interface ImagePreview {
 
 type GenStatus = "idle" | "loading" | "done" | "error";
 
+function renderInline(text: string) {
+  // Handle **bold**, #hashtags, and plain text
+  return text.split(/(\*\*[^*]+\*\*|#\w+)/g).map((part, i) => {
+    if (part.startsWith("**") && part.endsWith("**"))
+      return <strong key={i}>{part.slice(2, -2)}</strong>;
+    if (part.startsWith("#"))
+      return <span key={i} className="text-[#5CD3D3] font-medium">{part}</span>;
+    return part;
+  });
+}
+
 function renderPost(text: string) {
-  // Split into paragraphs, highlight hashtags within each
   return text.split(/\n+/).map((para, i) => {
     if (!para.trim()) return null;
-    const parts = para.split(/(#\w+)/g);
+
+    // Bold-only line = section header
+    if (/^\*\*[^*]+\*\*$/.test(para.trim())) {
+      return (
+        <p key={i} className="font-semibold text-foreground mt-3 mb-0.5">
+          {para.trim().slice(2, -2)}
+        </p>
+      );
+    }
+
+    // 🔹 bullet
+    if (para.trimStart().startsWith("🔹")) {
+      return (
+        <p key={i} className="leading-relaxed pl-1">
+          {renderInline(para)}
+        </p>
+      );
+    }
+
+    // Hashtag-only line
+    if (/^#/.test(para.trim())) {
+      return (
+        <p key={i} className="leading-relaxed flex flex-wrap gap-x-1.5 gap-y-0.5 mt-1">
+          {para.trim().split(/\s+/).map((tag, j) => (
+            <span key={j} className="text-[#5CD3D3] font-medium">{tag}</span>
+          ))}
+        </p>
+      );
+    }
+
     return (
       <p key={i} className="leading-relaxed">
-        {parts.map((part, j) =>
-          part.startsWith("#") ? (
-            <span key={j} className="text-[#5CD3D3] font-medium">{part}</span>
-          ) : (
-            part
-          )
-        )}
+        {renderInline(para)}
       </p>
     );
   });
