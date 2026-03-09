@@ -98,10 +98,8 @@ export interface Profile {
 // ─── Computed / UI types ──────────────────────────────────────────────────────
 
 export interface DashboardMetrics {
-  dealsThisWeek: number;
   dealsThisMonth: number;
   activePipeline: number;
-  weekOverWeekChange: number; // percentage vs prior week, can be negative
 }
 
 export interface SectorCount {

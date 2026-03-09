@@ -2,9 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatPercent } from "@/utils/formatters";
 import type { DashboardMetrics } from "@/types";
-import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { useCountUp } from "@/hooks/useCountUp";
 
 interface MetricsRowProps {
@@ -58,37 +56,21 @@ function StatCard({ label, value, valueClass, sub, subClass, trend, accentColor,
 }
 
 export function MetricsRow({ metrics, totalDeals, sectorCount, geoCount }: MetricsRowProps) {
-  const { dealsThisWeek, dealsThisMonth, activePipeline, weekOverWeekChange } = metrics;
-  const wowUp = weekOverWeekChange > 0;
-  const wowDown = weekOverWeekChange < 0;
-  const wowFlat = weekOverWeekChange === 0;
+  const { dealsThisMonth, activePipeline } = metrics;
 
-  // Count-up animations staggered by card index
-  const animTotal      = useCountUp(totalDeals,     800,  0);
-  const animActive     = useCountUp(activePipeline, 800,  70);
-  const animMonth      = useCountUp(dealsThisMonth, 800, 140);
-  const animWeek       = useCountUp(dealsThisWeek,  800, 210);
-  const animSectors    = useCountUp(sectorCount,    800, 280);
+  const animTotal   = useCountUp(totalDeals,     800,   0);
+  const animActive  = useCountUp(activePipeline, 800,  70);
+  const animMonth   = useCountUp(dealsThisMonth, 800, 140);
+  const animGeos    = useCountUp(geoCount,       800, 210);
+  const animSectors = useCountUp(sectorCount,    800, 280);
 
   return (
     <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
-      <StatCard index={0} label="Total Pipeline"      value={String(animTotal)}   accentColor="#5CD3D3" />
-      <StatCard index={1} label="Active Deals"        value={String(animActive)} />
-      <StatCard index={2} label="Inbound This Month"  value={String(animMonth)} />
-      <StatCard
-        index={3}
-        label="This Week"
-        value={String(animWeek)}
-        valueClass={wowUp ? "text-emerald-500" : wowDown ? "text-red-400" : undefined}
-        sub={
-          wowFlat
-            ? "no change vs last week"
-            : `${wowUp ? "+" : ""}${formatPercent(weekOverWeekChange)} vs last week`
-        }
-        subClass={wowUp ? "text-emerald-500" : wowDown ? "text-red-400" : "text-muted-foreground"}
-        trend={wowUp ? "up" : wowDown ? "down" : "flat"}
-      />
-      <StatCard index={4} label="Sectors Covered"    value={String(animSectors)} />
+      <StatCard index={0} label="Total Pipeline"       value={String(animTotal)}   accentColor="#5CD3D3" />
+      <StatCard index={1} label="Active Deals"         value={String(animActive)} />
+      <StatCard index={2} label="Inbound This Month"   value={String(animMonth)} />
+      <StatCard index={3} label="Geographic Coverage"  value={String(animGeos)} />
+      <StatCard index={4} label="Sectors Covered"      value={String(animSectors)} />
     </div>
   );
 }

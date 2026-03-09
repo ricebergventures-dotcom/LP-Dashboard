@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { BarChart2, Briefcase, Upload, Users, LogOut } from "lucide-react";
+import { BarChart2, Briefcase, Upload, Users, LogOut, Send } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
@@ -11,10 +11,11 @@ import { useAuth } from "@/hooks/useAuth";
 import { motion } from "framer-motion";
 
 const NAV_ITEMS = [
-  { label: "Pipeline",  href: "/dashboard",           icon: BarChart2  },
-  { label: "Portfolio", href: "/dashboard/portfolio",  icon: Briefcase  },
-  { label: "Upload",    href: "/dashboard/upload",     icon: Upload,  adminOnly: true },
-  { label: "Users",     href: "/dashboard/admin",      icon: Users,   adminOnly: true },
+  { label: "Pipeline",     href: "/dashboard",           icon: BarChart2  },
+  { label: "Portfolio",    href: "/dashboard/portfolio", icon: Briefcase  },
+  { label: "Submit Deal",  href: "/submit",              icon: Send,      external: true },
+  { label: "Upload",       href: "/dashboard/upload",    icon: Upload,    adminOnly: true },
+  { label: "Users",        href: "/dashboard/admin",     icon: Users,     adminOnly: true },
 ];
 
 export function Sidebar() {
@@ -53,13 +54,17 @@ export function Sidebar() {
       <nav className="flex-1 px-2.5 py-4 space-y-0.5">
         {NAV_ITEMS.map((item) => {
           if ("adminOnly" in item && item.adminOnly && !isAdmin) return null;
+          const isExternal = "external" in item && item.external;
           const active =
-            pathname === item.href ||
-            (item.href !== "/dashboard" && pathname.startsWith(item.href + "/"));
+            !isExternal &&
+            (pathname === item.href ||
+              (item.href !== "/dashboard" && pathname.startsWith(item.href + "/")));
           return (
             <Link
               key={item.href}
               href={item.href}
+              target={isExternal ? "_blank" : undefined}
+              rel={isExternal ? "noopener noreferrer" : undefined}
               className={cn(
                 "relative flex items-center gap-2.5 px-3 py-2 text-[13px] rounded-[3px] transition-colors",
                 active

@@ -1,7 +1,7 @@
 "use client";
 
 import { useState } from "react";
-import { ArrowUpRight, MapPin, Calendar, ExternalLink } from "lucide-react";
+import { MapPin, Calendar, ExternalLink } from "lucide-react";
 import { motion, AnimatePresence } from "framer-motion";
 
 interface Company {
@@ -14,7 +14,8 @@ interface Company {
   description: string;
   tags: string[];
   website: string;
-  highlight?: string; // one-line notable fact / traction
+  highlight?: string;
+  syndicate?: boolean;
 }
 
 const COMPANIES: Company[] = [
@@ -95,6 +96,7 @@ const COMPANIES: Company[] = [
     tags: ["Sleep", "Diagnostics", "Radar", "Digital Health"],
     website: "https://sleepiz.com",
     highlight: "FDA Breakthrough Device designation",
+    syndicate: true,
   },
   {
     name: "Swisspod",
@@ -121,6 +123,7 @@ const COMPANIES: Company[] = [
     tags: ["Carbon Capture", "Biochar", "Agriculture", "Carbon Credits"],
     website: "https://bchar.com",
     highlight: "Verified Puro.earth carbon removal certificates",
+    syndicate: true,
   },
   {
     name: "Rigor AI",
@@ -134,6 +137,7 @@ const COMPANIES: Company[] = [
     tags: ["AI", "Security Testing", "Critical Infrastructure", "Enterprise"],
     website: "https://rigor.ai",
     highlight: "Targets aerospace, automotive, and medical device software",
+    syndicate: true,
   },
   {
     name: "Arch0",
@@ -303,9 +307,16 @@ function CompanyCard({ company }: { company: Company }) {
           >
             {initials(company.name)}
           </div>
-          <span className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium border border-border text-muted-foreground bg-muted/30 rounded-[2px]">
-            {STAGE_LABEL[company.stage] ?? company.stage}
-          </span>
+          <div className="flex items-center gap-1.5">
+            <span className="inline-flex items-center gap-1 px-2 py-1 text-[10px] font-medium border border-border text-muted-foreground bg-muted/30 rounded-[2px]">
+              {STAGE_LABEL[company.stage] ?? company.stage}
+            </span>
+            {company.syndicate && (
+              <span className="inline-flex items-center px-2 py-1 text-[10px] font-medium border border-amber-500/25 text-amber-400 bg-amber-500/10 rounded-[2px]">
+                Syndicate
+              </span>
+            )}
+          </div>
         </div>
 
         {/* Name + tagline */}

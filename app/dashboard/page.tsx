@@ -41,10 +41,7 @@ async function PipelineContent() {
   const geographies = computeGeographyCounts(deals);
   const monthly = computeMonthlyInbound(deals);
   const sectorCount = new Set(deals.map((d) => d.sector).filter(Boolean)).size;
-  const geoCount = new Set(deals.map((d) => d.geography).filter(Boolean)).size;
-
-  // suppress unused warning
-  void geoCount;
+  const geoCount = new Set(deals.map((d) => d.geography).filter((g) => g && g !== "Unknown")).size;
 
   return (
     <div className="flex flex-col h-full overflow-hidden">

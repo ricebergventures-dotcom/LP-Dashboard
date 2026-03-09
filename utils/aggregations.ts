@@ -1,10 +1,6 @@
 import {
-  startOfWeek,
-  endOfWeek,
   startOfMonth,
-  subWeeks,
   parseISO,
-  isWithinInterval,
   compareDesc,
 } from "date-fns";
 import type {
@@ -19,14 +15,8 @@ import type {
 
 export function computeMetrics(deals: Deal[]): DashboardMetrics {
   const now = new Date();
-  const weekStart = startOfWeek(now, { weekStartsOn: 1 });
-  const weekEnd = endOfWeek(now, { weekStartsOn: 1 });
   const monthStart = startOfMonth(now);
-  const lastWeekStart = startOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
-  const lastWeekEnd = endOfWeek(subWeeks(now, 1), { weekStartsOn: 1 });
 
-  let dealsThisWeek = 0;
-  let dealsLastWeek = 0;
   let dealsThisMonth = 0;
   let activePipeline = 0;
 
@@ -34,33 +24,18 @@ export function computeMetrics(deals: Deal[]): DashboardMetrics {
     if (deal.status === "active") {
       activePipeline++;
     }
-    if (!deal.date_added) continue; // skip deals with no date for time-based counts
+    if (!deal.date_added) continue;
     const date = parseISO(deal.date_added);
-    if (isNaN(date.getTime())) continue; // skip invalid dates
+    if (isNaN(date.getTime())) continue;
 
-    if (isWithinInterval(date, { start: weekStart, end: weekEnd })) {
-      dealsThisWeek++;
-    }
-    if (isWithinInterval(date, { start: lastWeekStart, end: lastWeekEnd })) {
-      dealsLastWeek++;
-    }
     if (date >= monthStart) {
       dealsThisMonth++;
     }
   }
 
-  const weekOverWeekChange =
-    dealsLastWeek === 0
-      ? dealsThisWeek > 0
-        ? 100
-        : 0
-      : ((dealsThisWeek - dealsLastWeek) / dealsLastWeek) * 100;
-
   return {
-    dealsThisWeek,
     dealsThisMonth,
     activePipeline,
-    weekOverWeekChange,
   };
 }
 
