@@ -1,21 +1,11 @@
 import { NextResponse } from "next/server";
 import { createClient } from "@supabase/supabase-js";
-import nodemailer from "nodemailer";
+import { Resend } from "resend";
 
 const supabase = createClient(
   process.env.NEXT_PUBLIC_SUPABASE_URL!,
   process.env.SUPABASE_SERVICE_ROLE_KEY!
 );
-
-function createTransport() {
-  return nodemailer.createTransport({
-    service: "gmail",
-    auth: {
-      user: process.env.GMAIL_USER,
-      pass: process.env.GMAIL_APP_PASSWORD,
-    },
-  });
-}
 
 function buildEmailHtml(body: {
   company_name: string;
@@ -34,8 +24,7 @@ function buildEmailHtml(body: {
         </tr>`
       : "";
 
-  return `
-<!DOCTYPE html>
+  return `<!DOCTYPE html>
 <html>
 <body style="margin:0;padding:0;background:#f5f5f5;font-family:Arial,sans-serif;">
   <div style="max-width:600px;margin:32px auto;background:#fff;border:1px solid #e0e0e0;">
@@ -94,26 +83,15 @@ export async function POST(request: Request) {
 
     if (dbError) throw new Error(dbError.message);
 
-    // 2. Send email notification (non-blocking — don't fail submission if email fails)
-    if (process.env.GMAIL_USER && process.env.GMAIL_APP_PASSWORD) {
-      const transporter = createTransport();
-      await transporter.sendMail({
-        from:    `"Riceberg Deal Flow" <${process.env.GMAIL_USER}>`,
-        to:      "pitchdeckriceberg@gmail.com",
-        replyTo: body.contact_email,
-        subject: `New Deal Submission: ${body.company_name}${body.sector ? ` · ${body.sector}` : ""}`,
-        html:    buildEmailHtml(body),
-        text: [
-          `New deal submission from ${body.contact_name} <${body.contact_email}>`,
-          ``,
-          `Company: ${body.company_name}`,
-          body.sector        ? `Sector: ${body.sector}` : null,
-          body.website       ? `Website: ${body.website}` : null,
-          body.pitch_deck_url ? `Pitch Deck: ${body.pitch_deck_url}` : null,
-          ``,
-          `Description:`,
-          body.description,
-        ].filter(Boolean).join("\n"),
+    // 2. Send email via Resend
+    if (process.env.RESEND_API_KEY) {
+      const resend = new Resend(process.env.RESEND_API_KEY);
+      await resend.emails.send({
+        from:     "Riceberg Deal Flow <onboarding@resend.dev>",
+        to:       ["pitchdeckriceberg@gmail.com"],
+        replyTo:  body.contact_email,
+        subject:  `New Deal: ${body.company_name}${body.sector ? ` · ${body.sector}` : ""}`,
+        html:     buildEmailHtml(body),
       });
     }
 
