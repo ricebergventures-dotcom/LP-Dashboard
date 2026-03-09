@@ -18,6 +18,7 @@ export async function generateText({
   temperature = 0.3,
   maxTokens = 600,
   useSearch = false,
+  disableThinking = false,
 }: {
   systemPrompt: string;
   userMessage: string;
@@ -25,16 +26,23 @@ export async function generateText({
   maxTokens?: number;
   /** Enable Gemini Google Search grounding for up-to-date information. */
   useSearch?: boolean;
+  /** Disable thinking tokens so all maxOutputTokens go to actual output. */
+  disableThinking?: boolean;
 }): Promise<string> {
   const key = getApiKey();
+
+  const generationConfig: Record<string, unknown> = {
+    temperature,
+    maxOutputTokens: maxTokens,
+  };
+  if (disableThinking) {
+    generationConfig.thinkingConfig = { thinkingBudget: 0 };
+  }
 
   const body: Record<string, unknown> = {
     contents: [{ role: "user", parts: [{ text: userMessage }] }],
     systemInstruction: { parts: [{ text: systemPrompt }] },
-    generationConfig: {
-      temperature,
-      maxOutputTokens: maxTokens,
-    },
+    generationConfig,
   };
 
   if (useSearch) {
