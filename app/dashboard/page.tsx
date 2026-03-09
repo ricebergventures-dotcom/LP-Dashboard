@@ -7,12 +7,14 @@ import { StageDonutChart, StageDonutChartSkeleton } from "@/components/dashboard
 import { GeographyBarChart, GeographyBarChartSkeleton } from "@/components/dashboard/GeographyBarChart";
 import { InboundTrendChart, InboundTrendChartSkeleton } from "@/components/dashboard/InboundTrendChart";
 import { MonthlySummaryPanel, MonthlySummaryPanelSkeleton } from "@/components/dashboard/MonthlySummaryPanel";
+import { MemoDealsTable, MemoDealsTableSkeleton } from "@/components/dashboard/MemoDealsTable";
 import {
   computeMetrics,
   computeSectorCounts,
   computeStageCounts,
   computeGeographyCounts,
   computeMonthlyInbound,
+  groupStage,
 } from "@/utils/aggregations";
 import type { Deal, MonthlySummary } from "@/types";
 
@@ -42,6 +44,7 @@ async function PipelineContent() {
   const monthly = computeMonthlyInbound(deals);
   const sectorCount = new Set(deals.map((d) => d.sector).filter(Boolean)).size;
   const geoCount = new Set(deals.map((d) => d.geography).filter((g) => g && g !== "Unknown")).size;
+  const memoDeals = deals.filter((d) => groupStage(d.stage) === "Developing Deal Memo");
 
   return (
     <div className="flex flex-col h-full overflow-hidden">
@@ -80,6 +83,13 @@ async function PipelineContent() {
             <MonthlySummaryPanel summary={summary} />
           </div>
 
+          {/* Investment Memo Pipeline */}
+          {memoDeals.length > 0 && (
+            <div className="animate-fade-up" style={{ animationDelay: "400ms" }}>
+              <MemoDealsTable deals={memoDeals} />
+            </div>
+          )}
+
         </div>
       </div>
     </div>
@@ -100,6 +110,7 @@ function PipelineSkeleton() {
           </div>
           <GeographyBarChartSkeleton />
           <MonthlySummaryPanelSkeleton />
+          <MemoDealsTableSkeleton />
         </div>
       </div>
     </div>
