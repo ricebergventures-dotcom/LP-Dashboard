@@ -38,7 +38,7 @@ function buildContext(deals: Deal[]): string {
   for (const d of deals) {
     if (d.sector) sectorMap.set(d.sector, (sectorMap.get(d.sector) ?? 0) + 1);
   }
-  const sectors = [...sectorMap.entries()].sort((a, b) => b[1] - a[1]);
+  const sectors = Array.from(sectorMap.entries()).sort((a, b) => b[1] - a[1]);
 
   // Geography breakdown
   const geoMap = new Map<string, number>();
@@ -46,14 +46,14 @@ function buildContext(deals: Deal[]): string {
     if (d.geography && d.geography !== "Unknown")
       geoMap.set(d.geography, (geoMap.get(d.geography) ?? 0) + 1);
   }
-  const geos = [...geoMap.entries()].sort((a, b) => b[1] - a[1]).slice(0, 10);
+  const geos = Array.from(geoMap.entries()).sort((a, b) => b[1] - a[1]).slice(0, 10);
 
   // Stage breakdown
   const stageMap = new Map<string, number>();
   for (const d of deals) {
     if (d.stage) stageMap.set(d.stage, (stageMap.get(d.stage) ?? 0) + 1);
   }
-  const stages = [...stageMap.entries()].sort((a, b) => b[1] - a[1]);
+  const stages = Array.from(stageMap.entries()).sort((a, b) => b[1] - a[1]);
 
   const fmtDeal = (d: Deal) =>
     `${d.date_added ?? "unknown date"} | ${d.company_name} | ${d.sector || "Unknown sector"} | ${d.stage || "Unknown stage"} | ${d.geography || "Unknown"} | ${d.status}`;
