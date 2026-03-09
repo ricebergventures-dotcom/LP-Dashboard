@@ -15,15 +15,11 @@ interface MetricsRowProps {
 interface StatCardProps {
   label: string;
   value: string;
-  valueClass?: string;
-  sub?: string;
-  subClass?: string;
-  trend?: "up" | "down" | "flat";
   accentColor?: string;
   index: number;
 }
 
-function StatCard({ label, value, valueClass, sub, subClass, trend, accentColor, index }: StatCardProps) {
+function StatCard({ label, value, accentColor, index }: StatCardProps) {
   return (
     <motion.div
       initial={{ opacity: 0, y: 16 }}
@@ -36,21 +32,9 @@ function StatCard({ label, value, valueClass, sub, subClass, trend, accentColor,
       <p className="text-[10px] uppercase tracking-[0.08em] text-muted-foreground font-medium">
         {label}
       </p>
-      <p className={`tabular text-[2rem] font-light leading-none ${valueClass ?? "text-foreground"}`}>
+      <p className="tabular text-[2rem] font-light leading-none text-foreground">
         {value}
       </p>
-      {(sub || trend !== undefined) && (
-        <div className="flex items-center gap-1.5">
-          {trend === "up" && <TrendingUp className="h-3 w-3 text-emerald-500 shrink-0" />}
-          {trend === "down" && <TrendingDown className="h-3 w-3 text-red-400 shrink-0" />}
-          {trend === "flat" && <Minus className="h-3 w-3 text-muted-foreground shrink-0" />}
-          {sub && (
-            <span className={`text-[11px] leading-none ${subClass ?? "text-muted-foreground"}`}>
-              {sub}
-            </span>
-          )}
-        </div>
-      )}
     </motion.div>
   );
 }
