@@ -156,7 +156,6 @@ export function buildGeographyRecord(deals: Deal[]): Record<string, number> {
 export interface DealGroupSummary {
   totalDeals: number;
   activePipeline: number;
-  totalDeployed: number;   // sum of non-null check_size values (USD)
   sectors: Record<string, number>;
   stages: Record<string, number>;
   geographies: Record<string, number>;
@@ -167,7 +166,6 @@ export function buildSummaryGroups(deals: Deal[]): DealGroupSummary {
   return {
     totalDeals: deals.length,
     activePipeline: metrics.activePipeline,
-    totalDeployed: metrics.totalDeployed,
     sectors: buildSectorRecord(deals),
     stages: buildStageRecord(deals),
     geographies: buildGeographyRecord(deals),
