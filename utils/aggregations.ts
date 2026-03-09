@@ -39,11 +39,25 @@ export function computeMetrics(deals: Deal[]): DashboardMetrics {
   };
 }
 
+const KNOWN_SECTORS = new Set([
+  "Life Science",
+  "Spacetech",
+  "Future of Compute",
+  "Quantum",
+  "Climate Tech",
+  "Cybersecurity",
+]);
+
+export function normalizeSector(sector: string): string {
+  return KNOWN_SECTORS.has(sector) ? sector : "Other";
+}
+
 export function computeSectorCounts(deals: Deal[]): SectorCount[] {
   const map = new Map<string, number>();
   for (const deal of deals) {
-    if (!deal.sector) continue; // skip empty sectors
-    map.set(deal.sector, (map.get(deal.sector) ?? 0) + 1);
+    if (!deal.sector) continue;
+    const normalized = normalizeSector(deal.sector);
+    map.set(normalized, (map.get(normalized) ?? 0) + 1);
   }
   return Array.from(map.entries())
     .map(([sector, count]) => ({ sector, count }))
