@@ -14,7 +14,6 @@ import {
   computeStageCounts,
   computeGeographyCounts,
   computeMonthlyInbound,
-  groupStage,
 } from "@/utils/aggregations";
 import type { Deal, MonthlySummary } from "@/types";
 
@@ -44,7 +43,7 @@ async function PipelineContent() {
   const monthly = computeMonthlyInbound(deals);
   const sectorCount = new Set(deals.map((d) => d.sector).filter(Boolean)).size;
   const geoCount = new Set(deals.map((d) => d.geography).filter((g) => g && g !== "Unknown")).size;
-  const memoDeals = deals.filter((d) => groupStage(d.stage) === "Developing Deal Memo");
+  const memoDeals = deals.filter((d) => d.stage === "Develop Deal Memo [Hold]");
 
   return (
     <div className="flex flex-col h-full overflow-hidden">

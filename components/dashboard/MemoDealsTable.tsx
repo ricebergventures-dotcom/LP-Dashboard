@@ -7,7 +7,6 @@ import { Skeleton } from "@/components/ui/skeleton";
 import { RefreshCw } from "lucide-react";
 import { formatDate } from "@/utils/formatters";
 import type { Deal } from "@/types";
-import type { CompanyInsights } from "@/app/api/insights/route";
 
 interface MemoDealsTableProps {
   deals: Deal[];
@@ -29,16 +28,20 @@ const SECTOR_COLOR: Record<string, string> = {
   "Other":             "text-slate-400 bg-slate-500/10 border-slate-500/25",
 };
 
-async function fetchDescription(companyName: string): Promise<string> {
-  const res = await fetch("/api/insights", {
+async function fetchDescription(deal: Deal): Promise<string> {
+  const res = await fetch("/api/company-brief", {
     method: "POST",
     headers: { "Content-Type": "application/json" },
-    body: JSON.stringify({ company_name: companyName }),
+    body: JSON.stringify({
+      company_name: deal.company_name,
+      sector: deal.sector,
+      geography: deal.geography,
+    }),
   });
   if (!res.ok) throw new Error(`HTTP ${res.status}`);
-  const json = (await res.json()) as { data?: CompanyInsights; error?: string };
+  const json = (await res.json()) as { brief?: string; error?: string };
   if (json.error) throw new Error(json.error);
-  return json.data?.description ?? "No description available.";
+  return json.brief ?? "Early-stage deep-tech company.";
 }
 
 export function MemoDealsTable({ deals }: MemoDealsTableProps) {
@@ -47,7 +50,7 @@ export function MemoDealsTable({ deals }: MemoDealsTableProps) {
   const generateBrief = useCallback(async (deal: Deal) => {
     setBriefs((prev) => ({ ...prev, [deal.id]: { status: "loading" } }));
     try {
-      const description = await fetchDescription(deal.company_name);
+      const description = await fetchDescription(deal);
       setBriefs((prev) => ({ ...prev, [deal.id]: { status: "done", description } }));
     } catch (err) {
       setBriefs((prev) => ({
@@ -79,7 +82,7 @@ export function MemoDealsTable({ deals }: MemoDealsTableProps) {
         await Promise.allSettled(
           batch.map(async (deal) => {
             try {
-              const description = await fetchDescription(deal.company_name);
+              const description = await fetchDescription(deal);
               if (!cancelled) {
                 setBriefs((prev) => ({ ...prev, [deal.id]: { status: "done", description } }));
               }
