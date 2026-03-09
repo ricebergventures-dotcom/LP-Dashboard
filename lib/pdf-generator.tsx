@@ -37,8 +37,6 @@ interface TableRow { name: string; count: number; total: number }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-}
-
 /** Wraps text into lines that fit within maxWidth. Respects existing newlines. */
 function wrapText(text: string, font: PDFFont, size: number, maxWidth: number): string[] {
   const lines: string[] = [];
