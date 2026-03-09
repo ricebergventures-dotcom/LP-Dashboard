@@ -102,7 +102,6 @@ export interface DashboardMetrics {
   dealsThisMonth: number;
   activePipeline: number;
   weekOverWeekChange: number; // percentage vs prior week, can be negative
-  totalDeployed: number;      // sum of check_size for all deals with a non-null size (USD)
 }
 
 export interface SectorCount {

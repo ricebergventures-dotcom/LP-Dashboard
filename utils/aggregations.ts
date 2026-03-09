@@ -29,12 +29,8 @@ export function computeMetrics(deals: Deal[]): DashboardMetrics {
   let dealsLastWeek = 0;
   let dealsThisMonth = 0;
   let activePipeline = 0;
-  let totalDeployed = 0;
 
   for (const deal of deals) {
-    if (deal.check_size !== null) {
-      totalDeployed += deal.check_size;
-    }
     if (deal.status === "active") {
       activePipeline++;
     }
@@ -65,7 +61,6 @@ export function computeMetrics(deals: Deal[]): DashboardMetrics {
     dealsThisMonth,
     activePipeline,
     weekOverWeekChange,
-    totalDeployed,
   };
 }
 

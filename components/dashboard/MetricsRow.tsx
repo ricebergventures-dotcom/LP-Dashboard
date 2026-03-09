@@ -2,7 +2,7 @@
 
 import { motion } from "framer-motion";
 import { Skeleton } from "@/components/ui/skeleton";
-import { formatPercent, formatCheckSize } from "@/utils/formatters";
+import { formatPercent } from "@/utils/formatters";
 import type { DashboardMetrics } from "@/types";
 import { TrendingUp, TrendingDown, Minus } from "lucide-react";
 import { useCountUp } from "@/hooks/useCountUp";
@@ -58,7 +58,7 @@ function StatCard({ label, value, valueClass, sub, subClass, trend, accentColor,
 }
 
 export function MetricsRow({ metrics, totalDeals, sectorCount, geoCount }: MetricsRowProps) {
-  const { dealsThisWeek, dealsThisMonth, activePipeline, weekOverWeekChange, totalDeployed } = metrics;
+  const { dealsThisWeek, dealsThisMonth, activePipeline, weekOverWeekChange } = metrics;
   const wowUp = weekOverWeekChange > 0;
   const wowDown = weekOverWeekChange < 0;
   const wowFlat = weekOverWeekChange === 0;
@@ -71,7 +71,7 @@ export function MetricsRow({ metrics, totalDeals, sectorCount, geoCount }: Metri
   const animSectors    = useCountUp(sectorCount,    800, 280);
 
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
+    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
       <StatCard index={0} label="Total Pipeline"      value={String(animTotal)}   accentColor="#5CD3D3" />
       <StatCard index={1} label="Active Deals"        value={String(animActive)} />
       <StatCard index={2} label="Inbound This Month"  value={String(animMonth)} />
@@ -89,15 +89,14 @@ export function MetricsRow({ metrics, totalDeals, sectorCount, geoCount }: Metri
         trend={wowUp ? "up" : wowDown ? "down" : "flat"}
       />
       <StatCard index={4} label="Sectors Covered"    value={String(animSectors)} />
-      <StatCard index={5} label="Capital Deployed"   value={formatCheckSize(totalDeployed)} />
     </div>
   );
 }
 
 export function MetricsRowSkeleton() {
   return (
-    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-6 gap-3">
-      {Array.from({ length: 6 }).map((_, i) => (
+    <div className="grid grid-cols-2 sm:grid-cols-3 xl:grid-cols-5 gap-3">
+      {Array.from({ length: 5 }).map((_, i) => (
         <div key={i} className="bg-card border border-border p-5 space-y-2.5">
           <Skeleton className="h-2.5 w-24" />
           <Skeleton className="h-8 w-16" />

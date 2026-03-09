@@ -7,7 +7,6 @@ import { StageDonutChart, StageDonutChartSkeleton } from "@/components/dashboard
 import { GeographyBarChart, GeographyBarChartSkeleton } from "@/components/dashboard/GeographyBarChart";
 import { InboundTrendChart, InboundTrendChartSkeleton } from "@/components/dashboard/InboundTrendChart";
 import { MonthlySummaryPanel, MonthlySummaryPanelSkeleton } from "@/components/dashboard/MonthlySummaryPanel";
-import { MemoDealsTable, MemoDealsTableSkeleton } from "@/components/dashboard/MemoDealsTable";
 import {
   computeMetrics,
   computeSectorCounts,
@@ -43,7 +42,6 @@ async function PipelineContent() {
   const monthly = computeMonthlyInbound(deals);
   const sectorCount = new Set(deals.map((d) => d.sector).filter(Boolean)).size;
   const geoCount = new Set(deals.map((d) => d.geography).filter(Boolean)).size;
-  const memoDeals = deals.filter((d) => d.stage === "Develop Deal Memo [Hold]");
 
   // suppress unused warning
   void geoCount;
@@ -84,13 +82,6 @@ async function PipelineContent() {
           <div className="animate-fade-up" style={{ animationDelay: "320ms" }}>
             <MonthlySummaryPanel summary={summary} />
           </div>
-
-          {/* Investment Memo Pipeline */}
-          {memoDeals.length > 0 && (
-            <div className="animate-fade-up" style={{ animationDelay: "400ms" }}>
-              <MemoDealsTable deals={memoDeals} />
-            </div>
-          )}
 
         </div>
       </div>
