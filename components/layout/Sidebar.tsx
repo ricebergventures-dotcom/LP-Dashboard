@@ -3,7 +3,7 @@
 import Link from "next/link";
 import Image from "next/image";
 import { usePathname } from "next/navigation";
-import { BarChart2, Briefcase, Upload, Users, LogOut, Send } from "lucide-react";
+import { BarChart2, Briefcase, Upload, Users, LogOut, Send, CalendarDays } from "lucide-react";
 import { cn } from "@/lib/utils";
 import { createClient } from "@/lib/supabase";
 import { useRouter } from "next/navigation";
@@ -13,6 +13,7 @@ import { motion } from "framer-motion";
 const NAV_ITEMS = [
   { label: "Pipeline",     href: "/dashboard",           icon: BarChart2  },
   { label: "Portfolio",    href: "/dashboard/portfolio", icon: Briefcase  },
+  { label: "Events",       href: "/dashboard/events",    icon: CalendarDays },
   { label: "Submit Deal",  href: "/submit",              icon: Send,      external: true },
   { label: "Upload",       href: "/dashboard/upload",    icon: Upload,    adminOnly: true },
   { label: "Users",        href: "/dashboard/admin",     icon: Users,     adminOnly: true },
