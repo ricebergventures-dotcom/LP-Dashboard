@@ -154,7 +154,16 @@ const COMPANIES: Company[] = [
   },
 ];
 
-const ALL_SECTORS = ["All", ...Array.from(new Set(COMPANIES.map((c) => c.sector))).sort()];
+const ALL_SECTORS = [
+  "All",
+  "Life Science",
+  "Spacetech",
+  "Future of Compute",
+  "Quantum",
+  "Climate Tech",
+  "Cybersecurity",
+  "Fintech",
+];
 
 const SECTOR_STYLE: Record<string, { bg: string; text: string; border: string; dot: string }> = {
   "Life Science":      { bg: "bg-violet-500/10",  text: "text-violet-400",  border: "border-violet-500/25",  dot: "#A78BFA" },
