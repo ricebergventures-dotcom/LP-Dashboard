@@ -37,9 +37,6 @@ interface TableRow { name: string; count: number; total: number }
 
 // ─── Helpers ──────────────────────────────────────────────────────────────────
 
-function fmtWow(pct: number): string {
-  const sign = pct > 0 ? "+" : "";
-  return `${sign}${pct.toFixed(1)}%`;
 }
 
 /** Wraps text into lines that fit within maxWidth. Respects existing newlines. */
@@ -177,10 +174,10 @@ export async function generatePdf(data: PdfData): Promise<Uint8Array> {
   y -= 12;
 
   const metricItems: Array<{ label: string; value: string }> = [
-    { label: "Total New Deals", value: String(totalNewDeals) },
-    { label: "Deals This Week", value: String(metrics.dealsThisWeek) },
-    { label: "Active Pipeline",  value: String(metrics.activePipeline) },
-    { label: "Week-over-Week",   value: fmtWow(metrics.weekOverWeekChange) },
+    { label: "Total New Deals",   value: String(totalNewDeals) },
+    { label: "Inbound This Month", value: String(metrics.dealsThisMonth) },
+    { label: "Active Pipeline",   value: String(metrics.activePipeline) },
+    { label: "Total Tracked",     value: String(totalNewDeals) },
   ];
 
   const CELL_W   = CONTENT_W / 2;
