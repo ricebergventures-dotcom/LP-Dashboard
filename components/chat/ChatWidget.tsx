@@ -14,9 +14,10 @@ interface Message {
 
 const SUGGESTED = [
   "What deals did we review this month?",
-  "How many startups are in the pipeline?",
-  "What sectors are most represented?",
-  "Which companies are in deal memo stage?",
+  "What sectors are most represented in the pipeline?",
+  "What is Riceberg's investment thesis?",
+  "How do I submit a deal to Riceberg?",
+  "Who are the partners at Riceberg?",
   "What geographies are we seeing most?",
 ];
 
