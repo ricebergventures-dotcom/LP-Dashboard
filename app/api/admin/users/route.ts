@@ -1,9 +1,11 @@
 import { cookies } from "next/headers";
 import { createServerClient } from "@supabase/ssr";
+import { createClient as createServiceClient } from "@supabase/supabase-js";
 import { NextResponse } from "next/server";
 
 export const dynamic = "force-dynamic";
 
+// Anon client — used only to verify the requesting user's session/role
 function makeClient() {
   const cookieStore = cookies();
   return createServerClient(
@@ -15,6 +17,14 @@ function makeClient() {
         setAll: () => {},
       },
     }
+  );
+}
+
+// Service-role client — bypasses RLS so we can read/write all profiles
+function makeServiceClient() {
+  return createServiceClient(
+    process.env.NEXT_PUBLIC_SUPABASE_URL!,
+    process.env.SUPABASE_SERVICE_ROLE_KEY!
   );
 }
 
@@ -41,7 +51,8 @@ export async function GET() {
     return NextResponse.json({ error: "Forbidden" }, { status: 403 });
   }
 
-  const { data, error } = await supabase
+  const service = makeServiceClient();
+  const { data, error } = await service
     .from("profiles")
     .select("*")
     .order("created_at", { ascending: false });
@@ -68,7 +79,8 @@ export async function PATCH(request: Request) {
   if (body.approved !== undefined) update.approved = body.approved;
   if (body.role !== undefined) update.role = body.role;
 
-  const { error } = await supabase
+  const service = makeServiceClient();
+  const { error } = await service
     .from("profiles")
     .update(update)
     .eq("id", body.id);
